@@ -75,18 +75,23 @@ Manueller Initiallauf:
 - `make backfill` oder analoges `dags trigger arbeitsmarkt_backfill` fuer einen Backfill.
 - `make dbt-run` und `make dbt-test` lassen dbt isoliert im Airflow-Container laufen.
 
-## Verifizierter Deploymentstand
+## Verifizierter Live-Stand
 
-Stand des letzten Deployments auf diesem Repository:
+Stand des aktuellen Deployments:
 
-- Docker-Build erfolgreich fuer alle 4 Images (`backend`, `airflow-init`, `airflow-scheduler`, `airflow-webserver`).
-- `docker compose up -d` startet Postgres, Airflow-Init, Scheduler, Webserver und Backend stabil.
-- `GET http://127.0.0.1:8081/api/v1/health` antwortet `{"status":"ok"}`.
-- `GET http://127.0.0.1:8081/api/v1/ready` antwortet `{"status":"ok"}`.
-- `GET http://127.0.0.1:8081/api/v1/openapi.json` liefert die vollstaendige Spezifikation.
-- `GET http://127.0.0.1:8081/` liefert das statisch exportierte Dashboard (HTTP 200, HTML).
-- DAGs `arbeitsmarkt_data_pipeline` und `arbeitsmarkt_backfill` sind in Airflow registriert.
-- Datenendpunkte (`/api/v1/stats`, `/jobs`, `/skills`, `/companies`, `/cities`, `/trends/...`) sind erst nach erfolgreicher Pipeline antwortfaehig; bis dahin geben sie strukturierte Fehler im einheitlichen Format zurueck.
+- Erreichbar unter `https://pgadmin.thetransporterlabs.de/` (HTTP wird per 301 auf HTTPS umgeleitet, das Host-Nginx terminiert das TLS).
+- Lokal: `http://127.0.0.1:8081/` (Backend mit eingebettetem Dashboard).
+- Pipeline `arbeitsmarkt_data_pipeline` einmal komplett durchgelaufen mit allen sechs Tasks `success`: `ingestion_lauf -> silver_transformation -> gold_initialisieren -> dbt_deps -> dbt_run -> dbt_test`.
+- Backend antwortet mit echten Daten aus der Adzuna API:
+    - Mehr als 3000 aktive Stellenanzeigen aus Deutschland im Bestand
+    - Hunderte Unternehmen, dutzende Standorte mit Gehaltsstatistiken
+    - Live-Beispiel: Berlin Median 80.000 EUR, Bayern Median 91.250 EUR
+- Alle 17 ueberprueften Endpunkte (API + Frontend-Seiten) antworten mit HTTP 200:
+    - System: `/api/v1/health`, `/api/v1/ready`, `/api/v1/openapi.json`, `/api/v1/docs`
+    - Daten: `/api/v1/stats`, `/api/v1/jobs`, `/api/v1/skills`, `/api/v1/companies`, `/api/v1/cities`, `/api/v1/trends/zeitreihe`, `/api/v1/trends/gehaltsverteilung`
+    - Frontend: `/`, `/anzeigen/`, `/skills/`, `/unternehmen/`, `/staedte/`, `/trends/`
+- Health-Header `X-Korrelations-Kennung` ist in jeder Antwort gesetzt.
+- Container-Stack `docker compose ps`: `postgres`, `airflow-scheduler`, `airflow-webserver`, `backend` -> jeweils `running (healthy)`.
 
 ## Tests und Qualitaet
 

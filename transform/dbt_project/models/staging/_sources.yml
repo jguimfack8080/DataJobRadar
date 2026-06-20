@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: silver
+    schema: silver
+    description: "Bereinigte Stellenanzeigen aus der Silver-Schicht."
+    tables:
+      - name: stellenanzeigen
+        description: "Pro Adzuna-Stellenanzeige eine Zeile mit normalisierten Feldern."
+        columns:
+          - name: adzuna_id
+            description: "Stabile Kennung der Adzuna-Stellenanzeige."
+            tests:
+              - not_null
+              - unique
+          - name: titel
+            tests:
+              - not_null
+          - name: gehalt_mittel
+            description: "Mittel aus gehalt_min und gehalt_max, sofern vorhanden."

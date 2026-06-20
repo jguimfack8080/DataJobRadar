@@ -1,0 +1,49 @@
+version: 2
+
+models:
+  - name: dim_company
+    description: "Dimension Unternehmen."
+    columns:
+      - name: unternehmens_id
+        tests: [not_null, unique]
+      - name: unternehmen
+        tests: [not_null]
+  - name: dim_location
+    description: "Dimension Standort."
+    columns:
+      - name: standort_id
+        tests: [not_null, unique]
+  - name: dim_date
+    description: "Dimension Datum."
+    columns:
+      - name: datum
+        tests: [not_null, unique]
+  - name: fact_jobs
+    description: "Faktentabelle der Stellenangebote."
+    columns:
+      - name: adzuna_id
+        tests: [not_null, unique]
+      - name: unternehmens_id
+        tests:
+          - relationships:
+              to: ref('dim_company')
+              field: unternehmens_id
+      - name: standort_id
+        tests:
+          - relationships:
+              to: ref('dim_location')
+              field: standort_id
+  - name: fact_skills
+    description: "Faktentabelle der je Stellenanzeige extrahierten Faehigkeiten."
+    columns:
+      - name: adzuna_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fact_jobs')
+              field: adzuna_id
+      - name: skill
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Python','SQL','Java','Scala','Go','R','TypeScript','Airflow','Dagster','Prefect','dbt','Spark','Flink','Kafka','Kinesis','Snowflake','BigQuery','Redshift','Databricks','DuckDB','PostgreSQL','MySQL','MongoDB','Cassandra','ClickHouse','AWS','Azure','GCP','Docker','Kubernetes','Terraform','Ansible','Looker','Tableau','PowerBI','Superset','Metabase','Pandas','Polars','NumPy','PyTorch','TensorFlow','Scikit-Learn','MLflow','Kubeflow','Git','Linux']

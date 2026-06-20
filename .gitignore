@@ -1,0 +1,63 @@
+# Umgebungsdateien
+.env
+.env.local
+.env.*.local
+*.secret
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+.next/
+.turbo/
+out/
+.pnp.*
+*.tsbuildinfo
+
+# Data
+data_lake/bronze/*
+data_lake/silver/*
+data_lake/gold/*
+!data_lake/bronze/.gitkeep
+!data_lake/silver/.gitkeep
+!data_lake/gold/.gitkeep
+*.duckdb
+*.duckdb.wal
+*.parquet
+warehouse/
+
+# Airflow
+airflow.cfg
+airflow.db
+airflow-webserver.pid
+logs/
+plugins/__pycache__/
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store

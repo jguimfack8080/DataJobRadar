@@ -1,0 +1,9 @@
+djr:
+  target: prod
+  outputs:
+    prod:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '/data/warehouse/djr.duckdb') }}"
+      threads: 2
+      extensions:
+        - parquet

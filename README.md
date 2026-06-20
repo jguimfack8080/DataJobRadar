@@ -1,0 +1,116 @@
+# Data Job Radar Deutschland
+
+Analyseplattform fuer den deutschen IT-Arbeitsmarkt. Die Anwendung extrahiert
+taeglich Stellenangebote ueber die Adzuna API, normalisiert und transformiert
+sie ueber ein Bronze-Silver-Gold Data Lake, modelliert sie als Sternschema in
+DuckDB und stellt die Ergebnisse ueber ein modernes Dashboard zur Verfuegung.
+
+## Schluesseleigenschaften
+
+- Echte Produktionsarchitektur mit Ingestion, Data Lake, dbt, Orchestrierung, API und Dashboard.
+- Strikt ressourcenschonend: ein einziger Backend-Prozess hinter der bestehenden Nginx, kein zusaetzlicher Frontend-Runtime im Produktivbetrieb.
+- Durchgaengig deutschsprachig, ohne Emojis, mit klarer Trennung der Verantwortlichkeiten.
+- Vollstaendig containerisiert und durch ein einzelnes `docker compose up` startbar.
+
+## Architektur auf einen Blick
+
+```
+Adzuna API
+   |
+   v
+Ingestion (httpx + tenacity + Validierung) ---> Bronze (Parquet, partitioniert)
+                                                       |
+                                                       v
+                                                Silver (DuckDB SQL,
+                                                        Normalisierung,
+                                                        Skill-Extraktion)
+                                                       |
+                                                       v
+                                          dbt Core (Staging + Marts)
+                                                       |
+                                                       v
+                                          Gold (Sternschema in DuckDB)
+                                                       |
+                                                       v
+                                            FastAPI Backend (Port 8081)
+                                                       |
+                                                       v
+                                       Next.js Dashboard (statisch exportiert,
+                                       vom Backend ausgeliefert)
+```
+
+Eine detaillierte Datenflussbeschreibung steht in [docs/datenfluss.md](docs/datenfluss.md).
+
+## Projektstruktur
+
+```
+data-job-radar/
+  ingestion/        Adzuna-Client, Validierung, Pipeline
+  data_lake/        Bronze, Silver, Gold (Parquet, DuckDB)
+  skills/           Skill-Taxonomie und Extraktor
+  transform/        dbt-Core-Projekt (Staging + Marts)
+  analytics/        DuckDB-Engine und vorgefertigte Abfragen
+  orchestration/    Airflow-DAGs (Tagespipeline, Backfill)
+  backend/          FastAPI-Anwendung (Port 8081, serviert auch das Frontend)
+  frontend/         Next.js-Dashboard (statischer Export)
+  shared/           Geteilte Python-Bibliothek (djr_core)
+  infra/docker/     Dockerfiles und Requirements pro Service
+  tests/            Unit- und Integrationstests
+  docs/             ADRs, Datenfluss, Architektur, Setup
+```
+
+## Schnellstart
+
+Voraussetzungen: Docker und Docker Compose v2 oder hoeher.
+
+1. Datei `.env` anlegen, indem Sie `.env.example` kopieren und mit Ihren Adzuna-Zugangsdaten fuellen.
+2. `make bauen` baut alle Container.
+3. `make starten` startet Postgres, Airflow und das Backend.
+4. Im Browser `http://pgadmin.thetransporterlabs.de` (oder `http://127.0.0.1:8081`) oeffnen.
+5. Airflow-Webinterface: `http://127.0.0.1:8080` (Standardkonto `admin/admin`, im Produktivbetrieb aendern).
+
+Manueller Initiallauf:
+
+- `make ingest` triggert den DAG `arbeitsmarkt_data_pipeline`.
+- `make backfill` triggert einen Backfill ueber einen Zeitraum (siehe `orchestration/dags/dag_backfill.py`).
+- `make dbt-run` und `make dbt-test` lassen dbt isoliert im Airflow-Container laufen.
+
+## Tests und Qualitaet
+
+- `make tests` fuehrt die komplette Pytest-Suite im Backend-Container aus.
+- `make lint` (ruff), `make format` (ruff format) und `make typcheck` (mypy) decken die Codequalitaet ab.
+- dbt enthaelt explizite Datenqualitaetstests (`not_null`, `unique`, `relationships`, `accepted_values`).
+
+## Sicherheit
+
+- Geheimnisse werden ausschliesslich ueber `.env` geladen und nie versioniert.
+- Eingaben am API-Rand werden ueber Pydantic streng validiert.
+- IP-basiertes Rate Limiting (`BACKEND_RATE_LIMIT_PER_MINUTE`).
+- Konsistentes Fehlerformat ohne Preisgabe interner Details.
+- CORS auf die definierten Frontends begrenzt.
+
+## Deployment-Topologie
+
+Auf dem Host existiert bereits eine Nginx-Konfiguration, die
+`pgadmin.thetransporterlabs.de` auf `127.0.0.1:8081` proxyt. Dieses Projekt
+liefert daher KEINE eigene Nginx-Komponente und veroeffentlicht den Backend-Port
+ausschliesslich auf der Loopback-Schnittstelle. Die Architekturentscheidung ist
+in [docs/adr/0002-frontend-statisch-im-backend.md](docs/adr/0002-frontend-statisch-im-backend.md)
+festgehalten.
+
+## Performance- und Ressourcenbudgets
+
+- Backend laeuft mit einem Uvicorn-Worker und einer In-Memory-Cache-Schicht, Speicherbudget unter 512 MB.
+- Airflow nutzt LocalExecutor (kein Celery/Redis), Postgres ausschliesslich als Airflow-Metadatenbank.
+- DuckDB ist prozessintern, ohne zusaetzlichen Datenbankserver.
+- Frontend wird statisch exportiert und vom Backend ausgeliefert; in Produktion laeuft kein Node-Runtime.
+- Lighthouse-Performance- und Barrierefreiheits-Werte: jeweils mindestens 90 (Desktop).
+
+## Weiterfuehrende Dokumente
+
+- [Architekturuebersicht](docs/architektur.md)
+- [Setup-Anleitung](docs/setup.md)
+- [Deployment](docs/deployment.md)
+- [Datenfluss](docs/datenfluss.md)
+- [API-Referenz](docs/api.md)
+- [ADRs](docs/adr/)

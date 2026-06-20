@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "djr-backend"
+version = "0.1.0"
+description = "Data Job Radar Deutschland - Backend"
+requires-python = ">=3.11"
+dependencies = [
+  "djr-core",
+  "djr-data-lake",
+  "fastapi>=0.111",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "cachetools>=5.3",
+  "duckdb>=1.0",
+  "orjson>=3.10",
+  "starlette>=0.37",
+  "slowapi>=0.1.9",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2",
+  "pytest-asyncio>=0.23",
+  "httpx>=0.27",
+  "mypy>=1.10",
+  "ruff>=0.4",
+]

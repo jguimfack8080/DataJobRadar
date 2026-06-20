@@ -1,0 +1,16 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["frontend", "transform/dbt_project", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_unused_ignores = true
+ignore_missing_imports = true
+files = ["backend", "ingestion", "data_lake", "skills", "analytics", "shared/python/djr_core/djr_core"]
+exclude = "frontend|transform/dbt_project"

@@ -9,8 +9,14 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List
 
-from pydantic import Field, field_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _csv_in_liste(wert: str | None) -> List[str]:
+    if not wert:
+        return []
+    return [eintrag.strip() for eintrag in wert.split(",") if eintrag.strip()]
 
 
 class AdzunaSettings(BaseSettings):
@@ -35,16 +41,17 @@ class BackendSettings(BaseSettings):
     host: str = Field(default="0.0.0.0")
     port: int = Field(default=8081, ge=1, le=65535)
     log_level: str = Field(default="INFO")
-    cors_origins: List[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    cors_origins_csv: str = Field(
+        default="http://localhost:3000",
+        alias="cors_origins",
+        description="Komma-separierte Liste erlaubter CORS-Origins",
+    )
     cache_ttl_seconds: int = Field(default=300, ge=0, le=3600)
     rate_limit_per_minute: int = Field(default=120, ge=1, le=10000)
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def _split_origins(cls, value):
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
-        return value
+    @property
+    def cors_origins(self) -> List[str]:
+        return _csv_in_liste(self.cors_origins_csv)
 
 
 class DataLakeSettings(BaseSettings):

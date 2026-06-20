@@ -8,8 +8,11 @@ from airflow import DAG
 from airflow.decorators import task
 
 STANDARD_ARGUMENTE = {
-    "owner": "data_engineering",
+    "owner": "Jordan Jeuna",
     "depends_on_past": False,
+    "email": ["jeunaj3@gmail.com"],
+    "email_on_failure": True,
+    "email_on_retry": False,
     "retries": 1,
     "retry_delay": timedelta(minutes=2),
     "execution_timeout": timedelta(hours=2),

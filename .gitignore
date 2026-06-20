@@ -31,16 +31,11 @@ out/
 .pnp.*
 *.tsbuildinfo
 
-# Data
-data_lake/bronze/*
-data_lake/silver/*
-data_lake/gold/*
-!data_lake/bronze/.gitkeep
-!data_lake/silver/.gitkeep
-!data_lake/gold/.gitkeep
+# Data Lake Inhalte (Parquet, JSONL); Python-Module bleiben getrackt.
 *.duckdb
 *.duckdb.wal
 *.parquet
+*.jsonl
 warehouse/
 
 # Airflow
@@ -54,6 +49,7 @@ plugins/__pycache__/
 target/
 dbt_packages/
 logs/
+.user.yml
 
 # Editor
 .vscode/

@@ -23,6 +23,13 @@ x-airflow-common: &airflow-common
     DUCKDB_PATH: /data/warehouse/djr.duckdb
     LOG_FORMAT: ${LOG_FORMAT:-json}
     LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    AIRFLOW__SMTP__SMTP_HOST: ${SMTP_HOST:-}
+    AIRFLOW__SMTP__SMTP_STARTTLS: ${SMTP_STARTTLS:-True}
+    AIRFLOW__SMTP__SMTP_SSL: ${SMTP_SSL:-False}
+    AIRFLOW__SMTP__SMTP_USER: ${SMTP_USER:-}
+    AIRFLOW__SMTP__SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+    AIRFLOW__SMTP__SMTP_PORT: ${SMTP_PORT:-587}
+    AIRFLOW__SMTP__SMTP_MAIL_FROM: ${SMTP_MAIL_FROM:-}
   volumes:
     - ./orchestration/dags:/opt/airflow/dags:ro
     - ./shared/python/djr_core/djr_core:/opt/airflow/djr_core:ro
@@ -30,12 +37,22 @@ x-airflow-common: &airflow-common
     - ./data_lake:/opt/airflow/data_lake:ro
     - ./skills:/opt/airflow/skills:ro
     - ./analytics:/opt/airflow/analytics:ro
-    - ./transform:/opt/airflow/transform:ro
+    - ./transform:/opt/airflow/transform
     - djr-lake:/data/lake
     - djr-warehouse:/data/warehouse
     - airflow-logs:/opt/airflow/logs
 
 services:
+  volume-permissions:
+    image: busybox:1.36
+    user: "0:0"
+    volumes:
+      - djr-lake:/data/lake
+      - djr-warehouse:/data/warehouse
+      - airflow-logs:/opt/airflow/logs
+    command: sh -c "mkdir -p /data/lake/bronze /data/lake/silver /data/lake/gold /data/warehouse && chown -R 50000:0 /data/lake /data/warehouse /opt/airflow/logs && chmod -R 0775 /data/lake /data/warehouse /opt/airflow/logs"
+    restart: "no"
+
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -60,6 +77,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      volume-permissions:
+        condition: service_completed_successfully
     entrypoint: /bin/bash
     command: -c "airflow db migrate && airflow users create --role Admin --username admin --password admin --firstname Admin --lastname User --email admin@example.com || true"
     restart: "no"

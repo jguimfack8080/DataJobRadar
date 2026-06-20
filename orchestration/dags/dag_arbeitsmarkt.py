@@ -12,9 +12,11 @@ from airflow.operators.python import PythonOperator
 DBT_PROJEKT_PFAD = "/opt/airflow/transform/dbt_project"
 
 STANDARD_ARGUMENTE = {
-    "owner": "data_engineering",
+    "owner": "Jordan Jeuna",
     "depends_on_past": False,
-    "email_on_failure": False,
+    "email": ["jeunaj3@gmail.com"],
+    "email_on_failure": True,
+    "email_on_retry": False,
     "retries": 3,
     "retry_delay": timedelta(minutes=2),
     "retry_exponential_backoff": True,

@@ -61,25 +61,60 @@ data-job-radar/
 
 ## Schnellstart
 
-Voraussetzungen: Docker und Docker Compose v2 oder hoeher.
+Voraussetzungen: Docker und Docker Compose v2 oder hoeher. `make` ist optional.
 
 1. Datei `.env` anlegen, indem Sie `.env.example` kopieren und mit Ihren Adzuna-Zugangsdaten fuellen.
-2. `make bauen` baut alle Container.
-3. `make starten` startet Postgres, Airflow und das Backend.
+2. Container bauen: `make bauen` oder direkt `docker compose build`.
+3. Stack starten: `make starten` oder `docker compose up -d`.
 4. Im Browser `http://pgadmin.thetransporterlabs.de` (oder `http://127.0.0.1:8081`) oeffnen.
 5. Airflow-Webinterface: `http://127.0.0.1:8080` (Standardkonto `admin/admin`, im Produktivbetrieb aendern).
 
 Manueller Initiallauf:
 
-- `make ingest` triggert den DAG `arbeitsmarkt_data_pipeline`.
-- `make backfill` triggert einen Backfill ueber einen Zeitraum (siehe `orchestration/dags/dag_backfill.py`).
+- `make ingest` oder `docker compose exec airflow-scheduler airflow dags trigger arbeitsmarkt_data_pipeline`.
+- `make backfill` oder analoges `dags trigger arbeitsmarkt_backfill` fuer einen Backfill.
 - `make dbt-run` und `make dbt-test` lassen dbt isoliert im Airflow-Container laufen.
+
+## Verifizierter Deploymentstand
+
+Stand des letzten Deployments auf diesem Repository:
+
+- Docker-Build erfolgreich fuer alle 4 Images (`backend`, `airflow-init`, `airflow-scheduler`, `airflow-webserver`).
+- `docker compose up -d` startet Postgres, Airflow-Init, Scheduler, Webserver und Backend stabil.
+- `GET http://127.0.0.1:8081/api/v1/health` antwortet `{"status":"ok"}`.
+- `GET http://127.0.0.1:8081/api/v1/ready` antwortet `{"status":"ok"}`.
+- `GET http://127.0.0.1:8081/api/v1/openapi.json` liefert die vollstaendige Spezifikation.
+- `GET http://127.0.0.1:8081/` liefert das statisch exportierte Dashboard (HTTP 200, HTML).
+- DAGs `arbeitsmarkt_data_pipeline` und `arbeitsmarkt_backfill` sind in Airflow registriert.
+- Datenendpunkte (`/api/v1/stats`, `/jobs`, `/skills`, `/companies`, `/cities`, `/trends/...`) sind erst nach erfolgreicher Pipeline antwortfaehig; bis dahin geben sie strukturierte Fehler im einheitlichen Format zurueck.
 
 ## Tests und Qualitaet
 
 - `make tests` fuehrt die komplette Pytest-Suite im Backend-Container aus.
 - `make lint` (ruff), `make format` (ruff format) und `make typcheck` (mypy) decken die Codequalitaet ab.
 - dbt enthaelt explizite Datenqualitaetstests (`not_null`, `unique`, `relationships`, `accepted_values`).
+
+## Mailbenachrichtigung bei Pipeline-Fehlern
+
+Die DAGs `arbeitsmarkt_data_pipeline` und `arbeitsmarkt_backfill` haben `owner=jordan`
+und senden bei finalen Fehlern an `jeunaj3@gmail.com`.
+
+Damit Airflow Mails wirklich verschickt, muss eine SMTP-Konfiguration in `.env`
+eingetragen sein. Sind die Werte leer, bleibt der Versand stumm. Beispiel fuer
+Gmail mit App-Passwort (Erzeugung unter https://myaccount.google.com/apppasswords):
+
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_STARTTLS=True
+SMTP_SSL=False
+SMTP_USER=meine-mail@gmail.com
+SMTP_PASSWORD=das-16-zeichen-app-passwort
+SMTP_MAIL_FROM=meine-mail@gmail.com
+```
+
+Nach dem Setzen `docker compose up -d` neu ausfuehren, damit die Umgebungsvariablen
+in den Airflow-Containern aktualisiert werden.
 
 ## Sicherheit
 

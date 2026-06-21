@@ -16,16 +16,19 @@ export default function WikiSeite() {
           Data Job Radar Deutschland
         </h1>
         <p className="text-base text-muted-foreground">
-          Ein Live-Marktradar fuer IT- und Data-Stellen in Deutschland. Sie sehen taeglich
-          aktualisierte Statistiken zum Stellenmarkt: wer einstellt, was bezahlt wird,
-          welche Skills gefragt sind und wo die Stellen verteilt sind.
+          Ein Live-Marktradar fuer IT- und Data-Stellen in Deutschland. Mehrere Quellen
+          - die offizielle Bundesagentur fuer Arbeit, Adzuna, The Muse, Remotive und Jobicy
+          - werden zusammengefuehrt und auf Duplikate bereinigt. Sie sehen aktualisierte
+          Statistiken zum Stellenmarkt: wer einstellt, was bezahlt wird, welche Skills
+          gefragt sind und wo die Stellen verteilt sind.
         </p>
       </header>
 
       <KapitelKarte titel="Was ist das hier in einem Satz?">
         <p>
-          Diese Seite sammelt jeden Tag automatisch alle relevanten IT- und Data-Stellenanzeigen
-          aus Deutschland und zeigt Ihnen die Trends, Top-Arbeitgeber, gefragtesten Skills und
+          Diese Seite sammelt mehrmals pro Tag automatisch alle relevanten IT- und
+          Data-Stellenanzeigen aus fuenf Quellen, bereinigt sie Cross-Source und zeigt Ihnen die
+          Trends, Top-Arbeitgeber, gefragtesten Skills und
           marktueblichen Gehaelter auf einen Blick.
         </p>
       </KapitelKarte>
@@ -53,12 +56,13 @@ export default function WikiSeite() {
         />
         <Anleitung
           titel="Stellenanzeigen"
-          zweck="Konkrete Stellen suchen und direkt zur Adzuna-Anzeige springen."
+          zweck="Konkrete Stellen suchen und direkt zur Original-Anzeige springen."
           schritte={[
             'Geben Sie oben einen Suchbegriff ein (Titel oder Unternehmen) und klicken Sie "Filter anwenden".',
+            'Direkt unter den Eingabefeldern koennen Sie die Datenquellen auswaehlen (Bundesagentur, Adzuna, The Muse, Remotive, Jobicy). Mehrfachauswahl, ODER-Verknuepfung.',
             'Mit "Mehr Filter" oeffnen Sie die volle Filtersuite: Bundesland, Kategorie, Vertragstyp, Vertragszeit, Gehaltsspanne, Datumsbereich, Skills.',
             'Skills sind Mehrfachauswahl mit UND-Verknuepfung: Wer "Python" und "AWS" anklickt, sieht nur Anzeigen mit beiden.',
-            'Klicken Sie eine Trefferzeile an, um die Original-Anzeige bei Adzuna in einem neuen Tab zu oeffnen.',
+            'Klicken Sie eine Trefferzeile an, um die Original-Anzeige bei der jeweiligen Quelle in einem neuen Tab zu oeffnen.',
             'Unten erscheint "Mehr laden", solange weitere Treffer verfuegbar sind.',
             'Mit "Zuruecksetzen" loeschen Sie alle Filter auf einen Klick.',
           ]}
@@ -99,7 +103,7 @@ export default function WikiSeite() {
 
       <KapitelKarte titel="Was bedeuten die Zahlen?">
         <ul className="space-y-2 text-sm">
-          <li><span className="font-medium text-foreground">Aktive Anzeigen:</span> Aktuell von Adzuna ausgespielte Stellen mit Land Deutschland. Eine Stelle, die mehrfach am Tag erscheint, wird nur einmal gezaehlt.</li>
+          <li><span className="font-medium text-foreground">Aktive Anzeigen:</span> Aktuelle Stellen aus allen fuenf Quellen mit Bezug zu Deutschland. Eine Stelle, die in mehreren Quellen oder mehrfach am Tag erscheint, wird nur einmal gezaehlt.</li>
           <li><span className="font-medium text-foreground">Gehalt:</span> Wenn die Anzeige eine Spanne hat, nehmen wir den Mittelwert. Steht nur ein Wert in der Anzeige, nutzen wir genau diesen. Ohne Angabe wird die Anzeige nicht in Gehaltsstatistiken einberechnet.</li>
           <li><span className="font-medium text-foreground">Skills:</span> Werden aus dem Beschreibungstext der Anzeige automatisch erkannt. Nicht jeder Skill, der vorkommt, wird zwingend als zwingende Anforderung verstanden.</li>
           <li><span className="font-medium text-foreground">Stadt und Bundesland:</span> Stammen aus den Geo-Angaben der Anzeige. Anzeigen ohne klare Ortsangabe landen in "Deutschland / unbekannt".</li>
@@ -110,25 +114,84 @@ export default function WikiSeite() {
         <p>
           Die Pipeline laeuft taeglich automatisch und holt alle neuen Anzeigen. Die juengste
           Aktualisierung sehen Sie auf der Uebersichtsseite unter "spaeteste Anzeige".
-          Anzeigen, die bei Adzuna nicht mehr verfuegbar sind, bleiben aus historischen Gruenden
+          Anzeigen, die bei der Quelle nicht mehr verfuegbar sind, bleiben aus historischen Gruenden
           weiterhin sichtbar, koennen aber nicht mehr beworben werden; deshalb empfehlen wir,
           den direkten Link zu pruefen.
         </p>
       </KapitelKarte>
 
-      <KapitelKarte titel="Datenquelle und Lizenz">
-        <p className="text-sm">
-          Alle Daten stammen ausschliesslich aus der oeffentlichen{' '}
-          <a
-            href="https://developer.adzuna.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-accent underline-offset-4 hover:underline"
-          >
-            Adzuna-API
-          </a>{' '}
-          fuer das Land Deutschland. Jede Stellenanzeige verlinkt direkt auf das Original bei
-          Adzuna. Diese Seite ist kostenfrei nutzbar und gibt die Daten unveraendert wieder.
+      <KapitelKarte titel="Datenquellen und Lizenz">
+        <p className="mb-3 text-sm">
+          Daten stammen aus fuenf oeffentlichen Quellen. Jede Stelle verlinkt direkt auf
+          das Original bei der jeweiligen Quelle. Diese Seite ist kostenfrei nutzbar und
+          gibt die Daten unveraendert wieder.
+        </p>
+        <ul className="space-y-2 text-sm">
+          <li>
+            <span className="font-medium text-foreground">Bundesagentur fuer Arbeit</span> -
+            offizielle deutsche Jobboerse, hoechste Datenqualitaet.{' '}
+            <a
+              href="https://www.arbeitsagentur.de/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              arbeitsagentur.de
+            </a>
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Adzuna</span> - breite Marktabdeckung
+            mit aggregierten Stellen aus vielen Boersen.{' '}
+            <a
+              href="https://developer.adzuna.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              developer.adzuna.com
+            </a>
+          </li>
+          <li>
+            <span className="font-medium text-foreground">The Muse</span> - kuratierte
+            Tech-Stellen, ueberwiegend international.{' '}
+            <a
+              href="https://www.themuse.com/developers/api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              themuse.com/developers
+            </a>
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Remotive</span> - Remote-Stellen,
+            Filter auf DE/EU/Worldwide.{' '}
+            <a
+              href="https://remotive.com/api-documentation"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              remotive.com
+            </a>
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Jobicy</span> - Remote-Stellen, Filter
+            auf DE/EU/Worldwide.{' '}
+            <a
+              href="https://jobicy.com/jobs-rss-feed"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              jobicy.com
+            </a>
+          </li>
+        </ul>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Cross-Source-Deduplizierung: erscheint dieselbe Stelle in mehreren Quellen, wird sie
+          genau einmal angezeigt. Die Quelle mit der hoechsten Datenqualitaet wird behalten
+          (Reihenfolge: Bundesagentur, Adzuna, The Muse, Remotive, Jobicy).
         </p>
       </KapitelKarte>
 
@@ -137,15 +200,15 @@ export default function WikiSeite() {
           <li>Manche Anzeigen enthalten kein Gehalt; diese tauchen in den Gehaltsstatistiken nicht auf.</li>
           <li>Die Skill-Erkennung ist regelbasiert und kann gelegentlich Fehltreffer produzieren (zum Beispiel "R" als Programmiersprache erkennen, obwohl in der Anzeige nur ein Buchstabe gemeint ist).</li>
           <li>Sehr kleine Orte erscheinen oft als "Deutschland", weil die Original-Anzeige keine genauere Angabe enthaelt.</li>
-          <li>Es werden nur deutschsprachige und international ausgeschriebene Stellen mit Adzuna-Indexierung beruecksichtigt.</li>
+          <li>Es werden Stellen aus den fuenf integrierten Quellen beruecksichtigt; bei Remote-Boersen (Remotive, Jobicy, The Muse) wird zusaetzlich auf Standorte Germany, Europe, EU, EMEA, Worldwide oder Anywhere gefiltert.</li>
         </ul>
       </KapitelKarte>
 
       <KapitelKarte titel="Wie die Daten verarbeitet werden">
         <Diagramm
           quelle="/diagramme/datenfluss.svg"
-          alt="Adzuna -> Ingestion -> Bronze -> Silver -> Gold -> API -> Dashboard"
-          beschriftung="Von der Adzuna-API bis zu diesem Dashboard: ein automatischer Lauf pro Tag."
+          alt="Fuenf Quellen -> Ingestion -> Bronze -> Silver -> Gold -> API -> Dashboard"
+          beschriftung="Von fuenf Quellen bis zu diesem Dashboard: vier automatische Laeufe pro Tag mit Cross-Source-Deduplizierung."
         />
       </KapitelKarte>
 

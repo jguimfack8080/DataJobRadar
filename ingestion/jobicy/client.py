@@ -34,9 +34,9 @@ _RELEVANTE_LOCATIONS = (
 class JobicyClient(BasisQuelleClient):
     quelle = JobQuelle.JOBICY
 
+    # Jobicy akzeptiert nur bestimmte industry-Slugs.
     STANDARD_ANFRAGEN = (
-        Suchanfrage("data_engineer", "data-science", "Remote Data Engineer Stellen"),
-        Suchanfrage("software_dev", "dev-engineering", "Remote Software Engineering Stellen"),
+        Suchanfrage("data_engineer", "data-science", "Remote Data Stellen"),
     )
 
     def standard_suchanfragen(self) -> List[Suchanfrage]:

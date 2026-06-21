@@ -32,13 +32,22 @@ def _ingestion_lauf(ds: str, **kontext: Any) -> dict[str, Any]:
         ausfuehrungsdatum=datetime.strptime(ds, "%Y-%m-%d").date(),
         max_seiten_pro_kategorie=5,
     )
+    je_quelle = {
+        q.value: {
+            "geladen": b.geladene_treffer,
+            "gueltig": b.gueltige_treffer,
+            "quarantaene": b.quarantaenierte_treffer,
+            "abgebrochen": b.abgebrochen,
+            "abbruchgrund": b.abbruchgrund,
+        }
+        for q, b in bericht.je_quelle.items()
+    }
     return {
         "kennung": bericht.korrelationskennung,
-        "geladene_treffer": bericht.geladene_treffer,
-        "gueltige_treffer": bericht.gueltige_treffer,
-        "quarantaenierte_treffer": bericht.quarantaenierte_treffer,
-        "datenqualitaet": bericht.datenqualitaetsquote(),
-        "abgebrochen": bericht.abgebrochen,
+        "gesamt_geladen": bericht.gesamt_geladen(),
+        "gesamt_gueltig": bericht.gesamt_gueltig(),
+        "gesamt_quarantaene": bericht.gesamt_quarantaene(),
+        "je_quelle": je_quelle,
     }
 
 

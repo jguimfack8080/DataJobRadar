@@ -28,8 +28,8 @@ class MuseClient(BasisQuelleClient):
     quelle = JobQuelle.MUSE
 
     STANDARD_ANFRAGEN = (
-        Suchanfrage("data_engineer", "Data Science", "Data Engineer Stellen (Muse Kategorie Data Science)"),
         Suchanfrage("software_engineer", "Software Engineering", "Software Engineering Stellen"),
+        Suchanfrage("science_engineering", "Science and Engineering", "Science and Engineering Stellen"),
     )
 
     def __init__(self, http_client: Optional[httpx.Client] = None) -> None:
@@ -51,7 +51,7 @@ class MuseClient(BasisQuelleClient):
             anzeigen = [
                 self._mappen(r, anfrage.kategorie)
                 for r in results
-                if isinstance(r, dict) and r.get("id") and self._ist_deutsch(r)
+                if isinstance(r, dict) and r.get("id") and self._ist_relevant_fuer_deutschland(r)
             ]
             seitencount = int(antwort.get("page_count") or 1)
             yield QuelleSeite(
@@ -71,7 +71,6 @@ class MuseClient(BasisQuelleClient):
             parameter = {
                 "page": seite,
                 "category": kategorie_label,
-                "location": "Germany",
             }
             if _API_KEY:
                 parameter["api_key"] = _API_KEY
@@ -83,11 +82,16 @@ class MuseClient(BasisQuelleClient):
         return aufrufen()
 
     @staticmethod
-    def _ist_deutsch(roh: dict[str, Any]) -> bool:
+    def _ist_relevant_fuer_deutschland(roh: dict[str, Any]) -> bool:
+        """Akzeptiert Germany, Remote, Worldwide, EU-/Europe-Stellen."""
         locations = roh.get("locations") or []
+        if not locations:
+            return False
         for loc in locations:
             name = (loc.get("name") or "").lower()
-            if "germany" in name or "deutschland" in name:
+            if any(stichwort in name for stichwort in (
+                "germany", "deutschland", "remote", "worldwide", "anywhere", "europe", "eu", "emea"
+            )):
                 return True
         return False
 

@@ -37,6 +37,7 @@ class StatsService:
             anzahl_jobs=int(zeile.get("anzahl_jobs") or 0),
             anzahl_unternehmen=int(zeile.get("anzahl_unternehmen") or 0),
             anzahl_standorte=int(zeile.get("anzahl_standorte") or 0),
+            anzahl_quellen=int(zeile.get("anzahl_quellen") or 0),
             gehalt_mittel=zeile.get("gehalt_mittel"),
             frueheste_anzeige=zeile.get("frueheste_anzeige"),
             spaeteste_anzeige=zeile.get("spaeteste_anzeige"),

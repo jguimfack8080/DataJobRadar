@@ -59,6 +59,31 @@ data-job-radar/
   docs/             ADRs, Datenfluss, Architektur, Setup
 ```
 
+## Pipeline-Lauf und Zero-Duplikat-Garantie
+
+Die Pipeline laeuft **viermal pro Tag** automatisch: jeweils um 00:00, 06:00, 12:00
+und 18:00 UTC (Cron `0 */6 * * *`). `max_active_runs=1` verhindert ueberlappende
+Laeufe; eine laufende Pipeline blockiert den naechsten Schedule, bis sie fertig ist.
+
+Auch bei mehreren Laeufen pro Tag wird **garantiert kein Duplikat** in den Gold-Tabellen
+landen. Es gibt vier unabhaengige Schutzebenen:
+
+1. **Silver-SQL** dedupliziert mit `ROW_NUMBER() OVER (PARTITION BY adzuna_id ORDER BY abruf_zeitpunkt DESC)` innerhalb des Tagespartitions-Files.
+2. **dbt-Staging-Modell** wiederholt die Deduplizierung quer ueber **alle** Silver-Dateien (also auch ueber alle Tage hinweg).
+3. **dbt-Unique-Test** auf `fact_jobs.adzuna_id` prueft das Ergebnis nach jedem Lauf. Bei der kleinsten Verletzung faellt die Pipeline rot und der Verantwortliche bekommt eine Mail an `jeunaj3@gmail.com`.
+4. **Bronze-Dateinamen** enthalten eine Korrelationskennung, sodass parallele Schreibvorgaenge sich nicht ueberschreiben koennen.
+
+Frequenz aendern: In `orchestration/dags/dag_arbeitsmarkt.py` den `schedule`-Wert anpassen:
+
+```python
+schedule="0 */6 * * *"   # alle 6 Stunden (Standard, 4x/Tag)
+schedule="0 */4 * * *"   # alle 4 Stunden (6x/Tag)
+schedule="0 */12 * * *"  # alle 12 Stunden (2x/Tag)
+schedule="0 6 * * *"     # einmal taeglich 06:00 UTC
+```
+
+Anschliessend `docker compose restart airflow-scheduler`.
+
 ## Schnellstart
 
 Voraussetzungen: Docker und Docker Compose v2 oder hoeher. `make` ist optional.

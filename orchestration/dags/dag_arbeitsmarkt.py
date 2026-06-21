@@ -60,9 +60,13 @@ def _gold_initialisieren(**kontext: Any) -> dict[str, str]:
 
 with DAG(
     dag_id="arbeitsmarkt_data_pipeline",
-    description="Adzuna -> Bronze -> Silver -> dbt Gold (DuckDB)",
+    description=(
+        "Adzuna -> Bronze -> Silver -> dbt Gold (DuckDB). Laeuft viermal taeglich "
+        "(00:00 / 06:00 / 12:00 / 18:00 UTC). Mehrere Laeufe pro Tag erzeugen "
+        "garantiert keine Duplikate (Silver-Dedup, Staging-Dedup, dbt unique-Test)."
+    ),
     default_args=STANDARD_ARGUMENTE,
-    schedule="0 6 * * *",
+    schedule="0 */6 * * *",
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,

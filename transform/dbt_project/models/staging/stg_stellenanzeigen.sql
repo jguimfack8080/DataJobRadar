@@ -2,18 +2,22 @@
 
 with quelle as (
     select * from {{ source('silver', 'stellenanzeigen') }}
-    where adzuna_id is not null
+    where job_id is not null
 ),
 dedup as (
+    -- Sicherheitsnetz: falls dieselbe job_id ueber mehrere Silver-Dateien
+    -- (mehrere Tage) auftaucht, behalten wir die juengste Beobachtung.
     select *,
            row_number() over (
-               partition by adzuna_id
+               partition by job_id
                order by abruf_zeitpunkt desc nulls last
            ) as rang
     from quelle
 )
 select
-    adzuna_id,
+    job_id,
+    quelle,
+    quell_id,
     titel,
     titel_normalisiert,
     beschreibung,
@@ -32,6 +36,7 @@ select
     veroeffentlicht_am,
     abruf_zeitpunkt,
     skills,
-    angebots_url
+    angebots_url,
+    dedup_signatur
 from dedup
 where rang = 1

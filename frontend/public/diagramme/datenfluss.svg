@@ -1,39 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" font-family="Inter, system-ui, sans-serif" font-size="14">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" font-family="Inter, system-ui, sans-serif" font-size="13">
   <style>
     .knoten { fill: #ffffff; stroke: #000000; stroke-width: 1.5; }
     .text { fill: #000000; text-anchor: middle; dominant-baseline: middle; }
+    .titel { font-weight: 700; }
+    .sub { font-size: 11px; fill: #555555; font-style: italic; }
     .pfeil { stroke: #000000; stroke-width: 1.5; fill: none; }
   </style>
   <rect width="100%" height="100%" fill="#ffffff" />
-  <g>
-    <rect class="knoten" x="20" y="120" width="120" height="60" rx="8" />
-    <text class="text" x="80" y="150">Adzuna API</text>
-    <rect class="knoten" x="170" y="120" width="140" height="60" rx="8" />
-    <text class="text" x="240" y="150">Ingestion</text>
-    <rect class="knoten" x="340" y="120" width="120" height="60" rx="8" />
-    <text class="text" x="400" y="150">Bronze</text>
-    <rect class="knoten" x="490" y="120" width="120" height="60" rx="8" />
-    <text class="text" x="550" y="150">Silver</text>
-    <rect class="knoten" x="640" y="120" width="140" height="60" rx="8" />
-    <text class="text" x="710" y="150">dbt Core (Gold)</text>
-    <rect class="knoten" x="810" y="40" width="130" height="60" rx="8" />
-    <text class="text" x="875" y="70">FastAPI</text>
-    <rect class="knoten" x="810" y="200" width="130" height="60" rx="8" />
-    <text class="text" x="875" y="230">Next.js Dashboard</text>
 
-    <path class="pfeil" d="M140 150 L170 150" marker-end="url(#pfeilspitze)" />
-    <path class="pfeil" d="M310 150 L340 150" marker-end="url(#pfeilspitze)" />
-    <path class="pfeil" d="M460 150 L490 150" marker-end="url(#pfeilspitze)" />
-    <path class="pfeil" d="M610 150 L640 150" marker-end="url(#pfeilspitze)" />
-    <path class="pfeil" d="M780 130 Q820 110 820 100" marker-end="url(#pfeilspitze)" />
-    <path class="pfeil" d="M780 170 Q820 200 820 220" marker-end="url(#pfeilspitze)" />
-    <path class="pfeil" d="M875 100 L875 200" marker-end="url(#pfeilspitze)" />
+  <text x="600" y="40" class="text titel" font-size="18">Datenfluss von fuenf Quellen ins Dashboard</text>
+  <text x="600" y="60" class="text sub">Multi-Source Ingestion mit Cross-Source-Deduplizierung</text>
 
-    <text class="text" x="475" y="305">Apache Airflow orchestriert Ingestion, Silver-Transformation und dbt-Lauf.</text>
-  </g>
+  <rect x="40" y="120" width="180" height="50" rx="10" class="knoten" />
+  <text x="130" y="146" class="text titel">Bundesagentur f. Arbeit</text>
+
+  <rect x="40" y="190" width="180" height="50" rx="10" class="knoten" />
+  <text x="130" y="216" class="text titel">Adzuna</text>
+
+  <rect x="40" y="260" width="180" height="50" rx="10" class="knoten" />
+  <text x="130" y="286" class="text titel">The Muse</text>
+
+  <rect x="40" y="330" width="180" height="50" rx="10" class="knoten" />
+  <text x="130" y="356" class="text titel">Remotive</text>
+
+  <rect x="40" y="400" width="180" height="50" rx="10" class="knoten" />
+  <text x="130" y="426" class="text titel">Jobicy</text>
+
+  <rect x="290" y="240" width="180" height="80" rx="10" class="knoten" />
+  <text x="380" y="265" class="text titel">Ingestion</text>
+  <text x="380" y="285" class="text sub">5 Quellen-Adapter</text>
+  <text x="380" y="302" class="text sub">Validierung + Quarantaene</text>
+
+  <rect x="510" y="240" width="160" height="80" rx="10" class="knoten" />
+  <text x="590" y="265" class="text titel">Bronze</text>
+  <text x="590" y="285" class="text sub">Parquet, partitioniert</text>
+  <text x="590" y="302" class="text sub">nach quelle/datum</text>
+
+  <rect x="710" y="240" width="160" height="80" rx="10" class="knoten" />
+  <text x="790" y="265" class="text titel">Silver</text>
+  <text x="790" y="285" class="text sub">Intra + Cross-Source</text>
+  <text x="790" y="302" class="text sub">Dedup, Skill-Extraktion</text>
+
+  <rect x="910" y="240" width="160" height="80" rx="10" class="knoten" />
+  <text x="990" y="265" class="text titel">Gold (dbt)</text>
+  <text x="990" y="285" class="text sub">Sternschema</text>
+  <text x="990" y="302" class="text sub">unique-Test auf job_id</text>
+
+  <rect x="1100" y="120" width="160" height="60" rx="10" class="knoten" />
+  <text x="1180" y="144" class="text titel">FastAPI</text>
+  <text x="1180" y="164" class="text sub">/api/v1/*</text>
+  <text x="1180" y="135" class="text sub" font-size="0">.</text>
+
+  <rect x="1100" y="380" width="160" height="60" rx="10" class="knoten" />
+  <text x="1180" y="404" class="text titel">Next.js Dashboard</text>
+  <text x="1180" y="424" class="text sub">Filter, Quellen-Badge</text>
+
+  <path class="pfeil" d="M220 145 L290 270" marker-end="url(#pf)" />
+  <path class="pfeil" d="M220 215 L290 280" marker-end="url(#pf)" />
+  <path class="pfeil" d="M220 285 L290 290" marker-end="url(#pf)" />
+  <path class="pfeil" d="M220 355 L290 300" marker-end="url(#pf)" />
+  <path class="pfeil" d="M220 425 L290 310" marker-end="url(#pf)" />
+
+  <path class="pfeil" d="M470 280 L510 280" marker-end="url(#pf)" />
+  <path class="pfeil" d="M670 280 L710 280" marker-end="url(#pf)" />
+  <path class="pfeil" d="M870 280 L910 280" marker-end="url(#pf)" />
+
+  <path class="pfeil" d="M1070 270 L1100 180" marker-end="url(#pf)" />
+  <path class="pfeil" d="M1180 180 L1180 380" marker-end="url(#pf)" />
+
+  <text x="600" y="475" class="text sub">Apache Airflow orchestriert alle Quellen parallel; 4 Laeufe pro Tag.</text>
+
   <defs>
-    <marker id="pfeilspitze" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+    <marker id="pf" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
       <path d="M0,0 L0,6 L9,3 z" fill="#000000" />
     </marker>
   </defs>

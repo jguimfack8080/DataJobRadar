@@ -10,7 +10,9 @@ standorte as (
     select * from {{ ref('dim_location') }}
 )
 select
-    q.adzuna_id,
+    q.job_id,
+    q.quelle,
+    q.quell_id,
     u.unternehmens_id,
     s.standort_id,
     q.titel,

@@ -3,17 +3,18 @@ version: 2
 sources:
   - name: silver
     schema: silver
-    description: "Bereinigte Stellenanzeigen aus der Silver-Schicht."
+    description: "Bereinigte Stellenanzeigen aus der Silver-Schicht. Multi-Source mit Cross-Source-Dedup."
     tables:
       - name: stellenanzeigen
-        description: "Pro Adzuna-Stellenanzeige eine Zeile mit normalisierten Feldern."
+        description: "Pro Adzuna-/BA-/Muse-/Remotive-/Jobicy-Stellenanzeige eine Zeile mit normalisierten Feldern."
         columns:
-          - name: adzuna_id
-            description: "Stabile Kennung der Adzuna-Stellenanzeige. Kann auf Source-Ebene mehrfach auftreten (mehrere Abruftage); die Deduplizierung erfolgt im Staging-Modell."
+          - name: job_id
+            description: "Deterministischer Primaerschluessel aus (quelle, quell_id). Auf Source-Ebene kann er mehrfach auftreten, wenn der Tag mehrfach geschrieben wurde; Staging dedupliziert das."
+            tests:
+              - not_null
+          - name: quelle
             tests:
               - not_null
           - name: titel
             tests:
               - not_null
-          - name: gehalt_mittel
-            description: "Mittel aus gehalt_min und gehalt_max, sofern vorhanden."

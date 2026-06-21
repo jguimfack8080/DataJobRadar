@@ -1,16 +1,16 @@
 """Transformation der Bronze-Schicht in die Silver-Schicht.
 
 Aufgaben:
-- Vereinheitlichung von Orten, Unternehmen und Gehaltsangaben
-- Deduplizierung anhand der Adzuna-ID
-- Skill-Extraktion und Anreicherung
-- Schreiben als partitioniertes Parquet
+- Zusammenfuehrung der Quellen (alle Quellen liegen jetzt in Bronze)
+- Intra-Source-Dedup ueber (quelle, quell_id), aktuellster abruf_zeitpunkt gewinnt
+- Cross-Source-Dedup ueber dedup_signatur, hoechste quellen_prioritaet gewinnt
+- Skill-Extraktion
 """
 from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Iterable, Optional
 
 import duckdb
 
@@ -41,19 +41,11 @@ class SilverTransformator:
         ausfuehrungsdatum: date,
         kategorien: Optional[Iterable[str]] = None,
     ) -> Path:
-        """Liest Bronze-Daten, normalisiert sie und schreibt Silver-Parquet."""
+        bronze_root = self._einstellungen.bronze_path() / "stellenanzeigen"
         bronze_glob = (
-            self._einstellungen.bronze_path()
-            / "stellenanzeigen"
-            / f"jahr={ausfuehrungsdatum.year:04d}"
-            / f"monat={ausfuehrungsdatum.month:02d}"
-            / f"tag={ausfuehrungsdatum.day:02d}"
+            f"{bronze_root}/quelle=*/jahr={ausfuehrungsdatum.year:04d}/"
+            f"monat={ausfuehrungsdatum.month:02d}/tag={ausfuehrungsdatum.day:02d}/**/*.parquet"
         )
-
-        if not bronze_glob.exists():
-            raise FileNotFoundError(
-                f"Keine Bronze-Daten fuer {ausfuehrungsdatum.isoformat()} gefunden"
-            )
 
         ziel_verzeichnis = self._einstellungen.silver_path() / "stellenanzeigen"
         ziel_verzeichnis.mkdir(parents=True, exist_ok=True)
@@ -64,10 +56,8 @@ class SilverTransformator:
             verbindung.execute("SET memory_limit='512MB'")
             verbindung.execute("SET threads=2")
             self._funktionen_registrieren(verbindung)
-
             kategorie_filter = self._kategorie_filter(kategorien)
             abfrage = self._silver_abfrage(bronze_glob, kategorie_filter)
-
             verbindung.execute(
                 f"COPY ({abfrage.rstrip().rstrip(';')}) TO '{ziel}' "
                 "(FORMAT 'parquet', COMPRESSION 'zstd', ROW_GROUP_SIZE 100000)"
@@ -105,38 +95,56 @@ class SilverTransformator:
         return f"WHERE quell_kategorie IN ({liste})"
 
     @staticmethod
-    def _silver_abfrage(bronze_glob: Path, kategorie_filter: str) -> str:
+    def _silver_abfrage(bronze_glob: str, kategorie_filter: str) -> str:
         return f"""
         WITH roh AS (
-            SELECT * FROM read_parquet('{bronze_glob}/**/*.parquet', union_by_name=true)
+            SELECT * FROM read_parquet('{bronze_glob}', union_by_name=true)
             {kategorie_filter}
         ),
-        dedup AS (
+        intra_dedup AS (
             SELECT *
             FROM (
                 SELECT *,
                        ROW_NUMBER() OVER (
-                           PARTITION BY adzuna_id
+                           PARTITION BY quelle, quell_id
                            ORDER BY abruf_zeitpunkt DESC
-                       ) AS rang
+                       ) AS rang_intra
                 FROM roh
             )
-            WHERE rang = 1
+            WHERE rang_intra = 1
+        ),
+        cross_dedup AS (
+            SELECT *
+            FROM (
+                SELECT *,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY dedup_signatur
+                           ORDER BY quellen_prioritaet DESC, abruf_zeitpunkt DESC
+                       ) AS rang_cross
+                FROM intra_dedup
+            )
+            WHERE rang_cross = 1
         )
         SELECT
-            adzuna_id,
+            job_id,
+            quelle,
+            quell_id,
             titel,
             LOWER(TRIM(titel)) AS titel_normalisiert,
             beschreibung,
             unternehmen,
-            LOWER(TRIM(unternehmen)) AS unternehmen_normalisiert,
+            LOWER(TRIM(COALESCE(unternehmen,''))) AS unternehmen_normalisiert,
             COALESCE(
+                stadt,
                 NULLIF(CASE WHEN len(standort_segmente) >= 3 THEN standort_segmente[3] ELSE NULL END, ''),
                 NULLIF(CASE WHEN len(standort_segmente) >= 2 THEN standort_segmente[2] ELSE NULL END, ''),
                 standort_anzeige
             ) AS stadt,
-            COALESCE(NULLIF(CASE WHEN len(standort_segmente) >= 2 THEN standort_segmente[2] ELSE NULL END, ''),
-                     region) AS bundesland,
+            COALESCE(
+                bundesland,
+                NULLIF(CASE WHEN len(standort_segmente) >= 2 THEN standort_segmente[2] ELSE NULL END, ''),
+                region
+            ) AS bundesland,
             region,
             gehalt_min,
             gehalt_max,
@@ -150,10 +158,11 @@ class SilverTransformator:
             waehrung,
             vertragstyp,
             vertragszeit,
-            kategorie_bezeichnung AS kategorie,
+            COALESCE(kategorie_bezeichnung, kategorie_kennung) AS kategorie,
             veroeffentlicht_am,
             abruf_zeitpunkt,
             skills_extrahieren(beschreibung) AS skills,
-            angebots_url
-        FROM dedup
+            angebots_url,
+            dedup_signatur
+        FROM cross_dedup
         """

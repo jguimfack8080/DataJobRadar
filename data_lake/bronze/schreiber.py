@@ -1,6 +1,6 @@
 """Schreibt Roh- und Quarantaenedaten in die Bronze-Schicht (Parquet).
 
-Partitionierung: bronze/<datensatz>/jahr=YYYY/monat=MM/tag=DD/kategorie=KAT/seite-<n>-<korrelation>.parquet
+Partitionierung: bronze/<datensatz>/quelle=Q/jahr=YYYY/monat=MM/tag=DD/kategorie=KAT/seite-<n>-<korrelation>.parquet
 Format: Apache Parquet mit Zstd-Kompression fuer hohe Verdichtung.
 """
 from __future__ import annotations
@@ -15,7 +15,7 @@ import pyarrow.parquet as pq
 
 from djr_core.config import DataLakeSettings, get_settings
 from djr_core.logging import get_logger
-from djr_core.models import RohStellenanzeige
+from djr_core.models import JobQuelle, RohStellenanzeige
 
 _logger = get_logger("data_lake.bronze")
 
@@ -33,6 +33,7 @@ class BronzeSchreiber:
         self,
         *,
         anzeigen: Sequence[RohStellenanzeige],
+        quelle: JobQuelle,
         ausfuehrungsdatum: date,
         kategorie: str,
         seite: int,
@@ -43,6 +44,7 @@ class BronzeSchreiber:
 
         pfad = self._partitionspfad(
             datensatz="stellenanzeigen",
+            quelle=quelle,
             ausfuehrungsdatum=ausfuehrungsdatum,
             kategorie=kategorie,
         )
@@ -62,6 +64,7 @@ class BronzeSchreiber:
             "bronze_schicht_geschrieben",
             pfad=str(ziel),
             anzahl=len(anzeigen),
+            quelle=quelle.value,
             kategorie=kategorie,
             seite=seite,
         )
@@ -71,6 +74,7 @@ class BronzeSchreiber:
         self,
         *,
         rohdaten: Iterable[dict],
+        quelle: JobQuelle,
         ausfuehrungsdatum: date,
         kategorie: str,
         seite: int,
@@ -82,6 +86,7 @@ class BronzeSchreiber:
 
         pfad = self._partitionspfad(
             datensatz="quarantaene",
+            quelle=quelle,
             ausfuehrungsdatum=ausfuehrungsdatum,
             kategorie=kategorie,
         )
@@ -90,24 +95,31 @@ class BronzeSchreiber:
 
         with ziel.open("wb") as datei:
             for eintrag in rohdaten:
-                datei.write(orjson.dumps(eintrag))
+                datei.write(orjson.dumps(eintrag, default=str))
                 datei.write(b"\n")
         _logger.warning(
             "quarantaene_geschrieben",
             pfad=str(ziel),
             anzahl=len(rohdaten),
+            quelle=quelle.value,
             kategorie=kategorie,
             seite=seite,
         )
         return ziel
 
     def _partitionspfad(
-        self, *, datensatz: str, ausfuehrungsdatum: date, kategorie: str
+        self,
+        *,
+        datensatz: str,
+        quelle: JobQuelle,
+        ausfuehrungsdatum: date,
+        kategorie: str,
     ) -> Path:
         kategorie_sicher = kategorie.replace("/", "_").replace("\\", "_")
         return (
             self._einstellungen.bronze_path()
             / datensatz
+            / f"quelle={quelle.value}"
             / f"jahr={ausfuehrungsdatum.year:04d}"
             / f"monat={ausfuehrungsdatum.month:02d}"
             / f"tag={ausfuehrungsdatum.day:02d}"
@@ -116,11 +128,16 @@ class BronzeSchreiber:
 
     @staticmethod
     def _anzeigen_in_tabelle(anzeigen: Sequence[RohStellenanzeige]) -> pa.Table:
-        spalten: dict[str, List] = {feld: [] for feld in RohStellenanzeige.model_fields}
-        spalten["standort_segmente"] = []
-        for anzeige in anzeigen:
-            daten = anzeige.model_dump()
-            for feld, wert in daten.items():
-                if feld in spalten:
-                    spalten[feld].append(wert)
+        # `model_dump` schliesst computed fields ein (job_id, dedup_signatur, quellen_prioritaet).
+        zeilen = [anzeige.model_dump(mode="python") for anzeige in anzeigen]
+        # Enum -> String
+        for zeile in zeilen:
+            if "quelle" in zeile:
+                zeile["quelle"] = (
+                    zeile["quelle"].value if hasattr(zeile["quelle"], "value") else str(zeile["quelle"])
+                )
+        spalten: dict[str, List] = {}
+        for zeile in zeilen:
+            for feld, wert in zeile.items():
+                spalten.setdefault(feld, []).append(wert)
         return pa.table(spalten)

@@ -8,9 +8,10 @@ from analytics.queries.kennzahlen import (
     JobsFilter,
     abfrage_filter_facetten,
     abfrage_jobs_seite,
+    abfrage_quellen_verteilung,
 )
 
-from backend.app.schemas.antworten import Job, JobsSeite
+from backend.app.schemas.antworten import Job, JobsSeite, QuellenVerteilungEintrag
 
 
 class JobsService:
@@ -34,6 +35,7 @@ class JobsService:
         veroeffentlicht_seit: Optional[str] = None,
         veroeffentlicht_bis: Optional[str] = None,
         skills: Optional[List[str]] = None,
+        quellen: Optional[List[str]] = None,
         nach_keyset: Optional[str] = None,
         limit: int = 25,
     ) -> JobsSeite:
@@ -54,6 +56,7 @@ class JobsService:
                 veroeffentlicht_seit=veroeffentlicht_seit,
                 veroeffentlicht_bis=veroeffentlicht_bis,
                 skills=skills or [],
+                quellen=quellen or [],
                 nach_keyset=nach_keyset,
                 limit=limit,
             ),
@@ -61,6 +64,8 @@ class JobsService:
         jobs = [
             Job(
                 kennung=zeile["kennung"],
+                quelle=zeile.get("quelle"),
+                quell_id=zeile.get("quell_id"),
                 titel=zeile["titel"],
                 unternehmen=zeile.get("unternehmen"),
                 stadt=zeile.get("stadt"),
@@ -87,3 +92,14 @@ class JobsService:
 
     def facetten(self) -> dict[str, list[str]]:
         return abfrage_filter_facetten(self._engine)
+
+    def quellen_verteilung(self) -> List[QuellenVerteilungEintrag]:
+        zeilen = abfrage_quellen_verteilung(self._engine)
+        return [
+            QuellenVerteilungEintrag(
+                quelle=str(z.get("quelle") or ""),
+                anzahl_jobs=int(z.get("anzahl_jobs") or 0),
+                gehalt_mittel=z.get("gehalt_mittel"),
+            )
+            for z in zeilen
+        ]

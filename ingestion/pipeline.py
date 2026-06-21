@@ -1,28 +1,26 @@
-"""Orchestrierter Ingestion-Lauf von Adzuna in die Bronze-Schicht."""
+"""Orchestrierter Multi-Source-Ingestion-Lauf von allen Quellen in die Bronze-Schicht."""
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Iterable, List, Optional
 
-from djr_core.config import get_settings
 from djr_core.exceptions import QuotaErschoepftFehler
 from djr_core.logging import get_logger
+from djr_core.models import JobQuelle
 from djr_core.utils import aktueller_zeitpunkt_utc, neue_korrelationskennung
 
 from data_lake.bronze.schreiber import BronzeSchreiber
-from ingestion.adzuna.client import AdzunaClient
-from ingestion.adzuna.suchen import StandardSuchstrategie, Suchanfrage
-from ingestion.validation.schemata import validiere_adzuna_treffer
+from ingestion.base.client import BasisQuelleClient, Suchanfrage
+from ingestion.validation.schemata import validiere_anzeigen
 
 _logger = get_logger("ingestion.pipeline")
 
 
 @dataclass
-class LaufBericht:
-    """Berichtskennzahlen eines Ingestion-Laufs."""
-
-    korrelationskennung: str
+class QuelleBericht:
+    quelle: JobQuelle
     geladene_seiten: int = 0
     geladene_treffer: int = 0
     gueltige_treffer: int = 0
@@ -31,26 +29,70 @@ class LaufBericht:
     abgebrochen: bool = False
     abbruchgrund: Optional[str] = None
 
-    def datenqualitaetsquote(self) -> float:
-        if self.geladene_treffer == 0:
-            return 0.0
-        return round(self.gueltige_treffer / self.geladene_treffer, 4)
+
+@dataclass
+class LaufBericht:
+    korrelationskennung: str
+    je_quelle: dict[JobQuelle, QuelleBericht] = field(default_factory=dict)
+
+    def gesamt_geladen(self) -> int:
+        return sum(b.geladene_treffer for b in self.je_quelle.values())
+
+    def gesamt_gueltig(self) -> int:
+        return sum(b.gueltige_treffer for b in self.je_quelle.values())
+
+    def gesamt_quarantaene(self) -> int:
+        return sum(b.quarantaenierte_treffer for b in self.je_quelle.values())
+
+
+def _aktive_quellen() -> set[JobQuelle]:
+    """Liest die aktivierten Quellen aus der Umgebung.
+
+    `INGESTION_QUELLEN=adzuna,bundesagentur,muse,remotive,jobicy` aktiviert alle.
+    Default: alle.
+    """
+    roh = os.getenv("INGESTION_QUELLEN", "adzuna,bundesagentur,muse,remotive,jobicy")
+    aktiv = set()
+    for teil in (s.strip().lower() for s in roh.split(",")):
+        if not teil:
+            continue
+        try:
+            aktiv.add(JobQuelle(teil))
+        except ValueError:
+            _logger.warning("unbekannte_quelle_in_konfig", wert=teil)
+    return aktiv
+
+
+def _client_fuer(quelle: JobQuelle) -> BasisQuelleClient:
+    if quelle is JobQuelle.ADZUNA:
+        from ingestion.adzuna.client import AdzunaClient
+
+        return AdzunaClient()
+    if quelle is JobQuelle.BUNDESAGENTUR:
+        from ingestion.bundesagentur.client import BundesagenturClient
+
+        return BundesagenturClient()
+    if quelle is JobQuelle.MUSE:
+        from ingestion.muse.client import MuseClient
+
+        return MuseClient()
+    if quelle is JobQuelle.REMOTIVE:
+        from ingestion.remotive.client import RemotiveClient
+
+        return RemotiveClient()
+    if quelle is JobQuelle.JOBICY:
+        from ingestion.jobicy.client import JobicyClient
+
+        return JobicyClient()
+    raise ValueError(f"Keine Client-Implementierung fuer {quelle}")
 
 
 class IngestionPipeline:
-    """Steuert den Adzuna-Ingestion-Lauf bis zur Bronze-Schicht."""
+    """Steuert den Multi-Source-Ingestion-Lauf bis zur Bronze-Schicht."""
 
-    def __init__(
-        self,
-        *,
-        client: Optional[AdzunaClient] = None,
-        schreiber: Optional[BronzeSchreiber] = None,
-        suchstrategie: Optional[StandardSuchstrategie] = None,
-    ) -> None:
-        self._einstellungen = get_settings()
-        self._client = client or AdzunaClient()
+    def __init__(self, schreiber: Optional[BronzeSchreiber] = None) -> None:
         self._schreiber = schreiber or BronzeSchreiber()
-        self._suchstrategie = suchstrategie or StandardSuchstrategie()
+        self._aktive_quellen = _aktive_quellen()
 
     def ausfuehren(
         self,
@@ -58,86 +100,122 @@ class IngestionPipeline:
         ausfuehrungsdatum: Optional[date] = None,
         max_seiten_pro_kategorie: int = 5,
         kategorien: Optional[Iterable[str]] = None,
+        quellen: Optional[Iterable[JobQuelle]] = None,
     ) -> LaufBericht:
-        """Fuehrt einen kompletten Lauf aus.
-
-        Idempotenz wird durch Partitionierung nach Ausfuehrungsdatum und
-        Kategorie sowie durch Deduplizierung anhand der Adzuna-ID erreicht.
-        """
         kennung = neue_korrelationskennung()
         ausfuehrungsdatum = ausfuehrungsdatum or aktueller_zeitpunkt_utc().date()
         bericht = LaufBericht(korrelationskennung=kennung)
 
-        anfragen = (
-            self._suchstrategie.aus_kategorien(kategorien)
-            if kategorien
-            else self._suchstrategie.anfragen()
-        )
+        gewuenschte_quellen = set(quellen) if quellen is not None else self._aktive_quellen
 
         _logger.info(
             "ingestion_lauf_start",
             korrelationskennung=kennung,
             ausfuehrungsdatum=str(ausfuehrungsdatum),
-            anzahl_kategorien=len(anfragen),
+            quellen=[q.value for q in gewuenschte_quellen],
         )
 
-        for anfrage in anfragen:
-            bericht.kategorien.append(anfrage.kategorie)
-            try:
-                self._kategorie_laden(
-                    anfrage=anfrage,
-                    ausfuehrungsdatum=ausfuehrungsdatum,
-                    max_seiten=max_seiten_pro_kategorie,
-                    kennung=kennung,
-                    bericht=bericht,
-                )
-            except QuotaErschoepftFehler as fehler:
-                bericht.abgebrochen = True
-                bericht.abbruchgrund = fehler.meldung
-                _logger.error(
-                    "ingestion_lauf_abgebrochen",
-                    korrelationskennung=kennung,
-                    grund=fehler.meldung,
-                    kontext=fehler.kontext,
-                )
-                break
+        for quelle in gewuenschte_quellen:
+            self._quelle_laden(
+                quelle=quelle,
+                ausfuehrungsdatum=ausfuehrungsdatum,
+                max_seiten=max_seiten_pro_kategorie,
+                kategorien=kategorien,
+                kennung=kennung,
+                bericht=bericht,
+            )
 
         _logger.info(
             "ingestion_lauf_ende",
             korrelationskennung=kennung,
-            geladen=bericht.geladene_treffer,
-            gueltig=bericht.gueltige_treffer,
-            quarantaene=bericht.quarantaenierte_treffer,
-            abgebrochen=bericht.abgebrochen,
+            gesamt_geladen=bericht.gesamt_geladen(),
+            gesamt_gueltig=bericht.gesamt_gueltig(),
+            gesamt_quarantaene=bericht.gesamt_quarantaene(),
         )
         return bericht
+
+    def _quelle_laden(
+        self,
+        *,
+        quelle: JobQuelle,
+        ausfuehrungsdatum: date,
+        max_seiten: int,
+        kategorien: Optional[Iterable[str]],
+        kennung: str,
+        bericht: LaufBericht,
+    ) -> None:
+        quelle_bericht = QuelleBericht(quelle=quelle)
+        bericht.je_quelle[quelle] = quelle_bericht
+        try:
+            client = _client_fuer(quelle)
+        except Exception as fehler:
+            _logger.error("quelle_init_fehler", quelle=quelle.value, fehler=str(fehler))
+            quelle_bericht.abgebrochen = True
+            quelle_bericht.abbruchgrund = str(fehler)
+            return
+
+        try:
+            with client:
+                anfragen = client.standard_suchanfragen()
+                if kategorien:
+                    erlaubt = set(kategorien)
+                    anfragen = [a for a in anfragen if a.kategorie in erlaubt]
+
+                for anfrage in anfragen:
+                    quelle_bericht.kategorien.append(anfrage.kategorie)
+                    try:
+                        self._kategorie_laden(
+                            client=client,
+                            anfrage=anfrage,
+                            ausfuehrungsdatum=ausfuehrungsdatum,
+                            max_seiten=max_seiten,
+                            kennung=kennung,
+                            quelle_bericht=quelle_bericht,
+                        )
+                    except QuotaErschoepftFehler as fehler:
+                        quelle_bericht.abgebrochen = True
+                        quelle_bericht.abbruchgrund = fehler.meldung
+                        _logger.error(
+                            "quelle_abgebrochen",
+                            quelle=quelle.value,
+                            grund=fehler.meldung,
+                            kontext=fehler.kontext,
+                        )
+                        break
+                    except Exception as fehler:
+                        _logger.error(
+                            "kategorie_unerwarteter_fehler",
+                            quelle=quelle.value,
+                            kategorie=anfrage.kategorie,
+                            fehler=str(fehler),
+                        )
+        except Exception as fehler:
+            quelle_bericht.abgebrochen = True
+            quelle_bericht.abbruchgrund = str(fehler)
+            _logger.error("quelle_unerwarteter_fehler", quelle=quelle.value, fehler=str(fehler))
 
     def _kategorie_laden(
         self,
         *,
+        client: BasisQuelleClient,
         anfrage: Suchanfrage,
         ausfuehrungsdatum: date,
         max_seiten: int,
         kennung: str,
-        bericht: LaufBericht,
+        quelle_bericht: QuelleBericht,
     ) -> None:
-        for seite in self._client.seiten_abrufen(
-            anfrage.query,
-            kategorie=anfrage.kategorie,
-            max_seiten=max_seiten,
-        ):
-            bericht.geladene_seiten += 1
-            bericht.geladene_treffer += len(seite.treffer)
+        for seite in client.seiten_abrufen(anfrage, max_seiten=max_seiten):
+            quelle_bericht.geladene_seiten += 1
+            quelle_bericht.geladene_treffer += len(seite.anzeigen)
 
-            ergebnis = validiere_adzuna_treffer(
-                seite.treffer, quell_kategorie=anfrage.kategorie
-            )
-            bericht.gueltige_treffer += ergebnis.anzahl_gueltig
-            bericht.quarantaenierte_treffer += ergebnis.anzahl_quarantaene
+            ergebnis = validiere_anzeigen(seite.anzeigen)
+            quelle_bericht.gueltige_treffer += ergebnis.anzahl_gueltig
+            quelle_bericht.quarantaenierte_treffer += ergebnis.anzahl_quarantaene
 
             if ergebnis.gueltig:
                 self._schreiber.schreiben(
                     anzeigen=ergebnis.gueltig,
+                    quelle=client.quelle,
                     ausfuehrungsdatum=ausfuehrungsdatum,
                     kategorie=anfrage.kategorie,
                     seite=seite.seite,
@@ -147,6 +225,7 @@ class IngestionPipeline:
             if ergebnis.quarantaene:
                 self._schreiber.quarantaene_schreiben(
                     rohdaten=ergebnis.quarantaene,
+                    quelle=client.quelle,
                     ausfuehrungsdatum=ausfuehrungsdatum,
                     kategorie=anfrage.kategorie,
                     seite=seite.seite,

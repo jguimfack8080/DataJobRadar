@@ -36,7 +36,7 @@ export async function holen<T>(pfad: string, parameter?: Record<string, Wert | W
     try {
       nutzlast = await antwort.json();
     } catch {
-      // ignoriere parse-Fehler, Standardmeldung folgt
+      // ignoriere parse-Fehler
     }
     throw new ApiFehler(
       nutzlast.code ?? 'unbekannt',
@@ -52,18 +52,28 @@ export const endpunkte = {
   jobs: (filter: JobsFilter) =>
     holen<JobsSeite>('/jobs', filter as unknown as Record<string, Wert | Wert[]>),
   facetten: () => holen<FilterFacetten>('/jobs/facetten'),
+  quellenVerteilung: () => holen<QuellenVerteilung[]>('/jobs/quellen'),
   topSkills: (limit = 12) => holen<SkillKennzahl[]>('/skills', { limit }),
   topUnternehmen: (limit = 10) => holen<UnternehmensKennzahl[]>('/companies', { limit }),
   topStaedte: (limit = 10) => holen<StadtKennzahl[]>('/cities', { limit }),
   zeitreihe: (tage = 30) => holen<ZeitreihePunkt[]>('/trends/zeitreihe', { tage }),
-  gehaltsverteilung: (gruppierung: 'kategorie' | 'stadt' | 'bundesland' = 'kategorie') =>
+  gehaltsverteilung: (gruppierung: 'kategorie' | 'stadt' | 'bundesland' | 'quelle' = 'kategorie') =>
     holen<GehaltsverteilungEintrag[]>('/trends/gehaltsverteilung', { gruppierung }),
+};
+
+export const QUELLEN_BESCHRIFTUNG: Record<string, string> = {
+  bundesagentur: 'Bundesagentur f. Arbeit',
+  adzuna: 'Adzuna',
+  muse: 'The Muse',
+  remotive: 'Remotive',
+  jobicy: 'Jobicy',
 };
 
 export interface KennzahlenGesamt {
   anzahl_jobs: number;
   anzahl_unternehmen: number;
   anzahl_standorte: number;
+  anzahl_quellen: number;
   gehalt_mittel: number | null;
   frueheste_anzeige: string | null;
   spaeteste_anzeige: string | null;
@@ -71,6 +81,8 @@ export interface KennzahlenGesamt {
 
 export interface Job {
   kennung: string;
+  quelle: string | null;
+  quell_id: string | null;
   titel: string;
   unternehmen: string | null;
   stadt: string | null;
@@ -107,6 +119,7 @@ export interface JobsFilter {
   veroeffentlicht_seit?: string;
   veroeffentlicht_bis?: string;
   skill?: string[];
+  quelle?: string[];
   nach?: string;
   limit?: number;
 }
@@ -118,6 +131,7 @@ export interface FilterFacetten {
   bundeslaender: string[];
   staedte: string[];
   skills: string[];
+  quellen: string[];
 }
 
 export interface SkillKennzahl {
@@ -150,5 +164,11 @@ export interface GehaltsverteilungEintrag {
   gehalt_p25: number | null;
   gehalt_median: number | null;
   gehalt_p75: number | null;
+  gehalt_mittel: number | null;
+}
+
+export interface QuellenVerteilung {
+  quelle: string;
+  anzahl_jobs: number;
   gehalt_mittel: number | null;
 }

@@ -8,7 +8,9 @@ from pydantic import BaseModel, Field
 
 
 class Job(BaseModel):
-    kennung: str = Field(..., description="Stabile Adzuna-Kennung der Anzeige.")
+    kennung: str = Field(..., description="Deterministischer Job-Schluessel: sha256(quelle:quell_id), 24 Zeichen.")
+    quelle: Optional[str] = Field(default=None, description="Datenquelle: bundesagentur, adzuna, muse, remotive, jobicy.")
+    quell_id: Optional[str] = Field(default=None, description="Original-ID innerhalb der Quelle.")
     titel: str
     unternehmen: Optional[str] = None
     stadt: Optional[str] = None
@@ -24,7 +26,7 @@ class Job(BaseModel):
     skills: List[str] = Field(default_factory=list)
     angebots_url: Optional[str] = Field(
         default=None,
-        description="Direkter Link zur Original-Stellenanzeige bei Adzuna.",
+        description="Direkter Link zur Original-Stellenanzeige bei der Quelle.",
     )
 
 
@@ -32,7 +34,7 @@ class JobsSeite(BaseModel):
     treffer: List[Job]
     naechstes_keyset: Optional[str] = Field(
         default=None,
-        description="Token fuer die naechste Seite (Format: ISO8601|adzuna_id).",
+        description="Token fuer die naechste Seite (Format: ISO8601|job_id).",
     )
 
 
@@ -40,6 +42,7 @@ class KennzahlenGesamt(BaseModel):
     anzahl_jobs: int
     anzahl_unternehmen: int
     anzahl_standorte: int
+    anzahl_quellen: int = 0
     gehalt_mittel: Optional[float] = None
     frueheste_anzeige: Optional[datetime] = None
     spaeteste_anzeige: Optional[datetime] = None
@@ -85,3 +88,10 @@ class FilterFacetten(BaseModel):
     bundeslaender: List[str] = Field(default_factory=list)
     staedte: List[str] = Field(default_factory=list)
     skills: List[str] = Field(default_factory=list)
+    quellen: List[str] = Field(default_factory=list)
+
+
+class QuellenVerteilungEintrag(BaseModel):
+    quelle: str
+    anzahl_jobs: int
+    gehalt_mittel: Optional[float] = None

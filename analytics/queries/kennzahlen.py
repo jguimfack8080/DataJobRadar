@@ -31,6 +31,7 @@ class JobsFilter:
     veroeffentlicht_seit: Optional[str] = None
     veroeffentlicht_bis: Optional[str] = None
     skills: List[str] = field(default_factory=list)
+    quellen: List[str] = field(default_factory=list)
     nach_keyset: Optional[str] = None
     limit: int = 25
 
@@ -96,13 +97,18 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
     if filter.skills:
         for skill in filter.skills:
             bedingungen.append(
-                f"EXISTS (SELECT 1 FROM {_FAKT_SKILLS} fs WHERE fs.adzuna_id = f.adzuna_id AND fs.skill = ?)"
+                f"EXISTS (SELECT 1 FROM {_FAKT_SKILLS} fs WHERE fs.job_id = f.job_id AND fs.skill = ?)"
             )
             parameter.append(skill)
 
+    if filter.quellen:
+        platzhalter = ",".join("?" for _ in filter.quellen)
+        bedingungen.append(f"LOWER(f.quelle) IN ({platzhalter})")
+        parameter.extend(q.lower() for q in filter.quellen)
+
     if filter.nach_keyset:
         bedingungen.append(
-            "(f.veroeffentlicht_am, f.adzuna_id) < (CAST(? AS TIMESTAMP), CAST(? AS VARCHAR))"
+            "(f.veroeffentlicht_am, f.job_id) < (CAST(? AS TIMESTAMP), CAST(? AS VARCHAR))"
         )
         zeitstempel, kennung = _keyset_parsen(filter.nach_keyset)
         parameter.extend([zeitstempel, kennung])
@@ -110,7 +116,9 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
     where = " AND ".join(bedingungen)
     sql = f"""
         SELECT
-            f.adzuna_id AS kennung,
+            f.job_id AS kennung,
+            f.quelle,
+            f.quell_id,
             f.titel,
             d.unternehmen,
             s.stadt,
@@ -129,7 +137,7 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
         LEFT JOIN {_DIM_UNTERNEHMEN} d ON d.unternehmens_id = f.unternehmens_id
         LEFT JOIN {_DIM_STANDORT} s ON s.standort_id = f.standort_id
         WHERE {where}
-        ORDER BY f.veroeffentlicht_am DESC NULLS LAST, f.adzuna_id DESC
+        ORDER BY f.veroeffentlicht_am DESC NULLS LAST, f.job_id DESC
         LIMIT ?
     """
     parameter.append(min(max(filter.limit, 1), 200))
@@ -137,7 +145,6 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
 
 
 def abfrage_filter_facetten(engine: DuckDBEngine) -> dict[str, list[str]]:
-    """Liefert die verfuegbaren Filterwerte (Facetten) fuer das Frontend."""
     sql_kategorien = f"SELECT DISTINCT kategorie FROM {_FAKT} WHERE kategorie IS NOT NULL ORDER BY kategorie"
     sql_vertragstyp = (
         f"SELECT DISTINCT vertragstyp FROM {_FAKT} "
@@ -162,6 +169,10 @@ def abfrage_filter_facetten(engine: DuckDBEngine) -> dict[str, list[str]]:
         f"SELECT skill, COUNT(*)::BIGINT AS n FROM {_FAKT_SKILLS} "
         "GROUP BY skill ORDER BY n DESC LIMIT 50"
     )
+    sql_quellen = (
+        f"SELECT quelle, COUNT(*)::BIGINT AS n FROM {_FAKT} "
+        "WHERE quelle IS NOT NULL GROUP BY quelle ORDER BY n DESC"
+    )
 
     return {
         "kategorien": [str(zeile["kategorie"]) for zeile in engine.abfragen(sql_kategorien)],
@@ -170,6 +181,7 @@ def abfrage_filter_facetten(engine: DuckDBEngine) -> dict[str, list[str]]:
         "bundeslaender": [str(z["bundesland"]) for z in engine.abfragen(sql_bundeslaender)],
         "staedte": [str(z["stadt"]) for z in engine.abfragen(sql_staedte)],
         "skills": [str(z["skill"]) for z in engine.abfragen(sql_skills)],
+        "quellen": [str(z["quelle"]) for z in engine.abfragen(sql_quellen)],
     }
 
 
@@ -179,6 +191,7 @@ def abfrage_kennzahlen_gesamt(engine: DuckDBEngine) -> dict[str, Any]:
             COUNT(*)::BIGINT AS anzahl_jobs,
             COUNT(DISTINCT unternehmens_id)::BIGINT AS anzahl_unternehmen,
             COUNT(DISTINCT standort_id)::BIGINT AS anzahl_standorte,
+            COUNT(DISTINCT quelle)::BIGINT AS anzahl_quellen,
             AVG(gehalt_mittel) AS gehalt_mittel,
             MIN(veroeffentlicht_am) AS frueheste_anzeige,
             MAX(veroeffentlicht_am) AS spaeteste_anzeige
@@ -192,7 +205,7 @@ def abfrage_top_skills(engine: DuckDBEngine, limit: int = 20) -> List[dict[str, 
     sql = f"""
         SELECT skill,
                COUNT(*)::BIGINT AS anzahl,
-               COUNT(DISTINCT adzuna_id)::BIGINT AS anzahl_jobs
+               COUNT(DISTINCT job_id)::BIGINT AS anzahl_jobs
         FROM {_FAKT_SKILLS}
         GROUP BY skill
         ORDER BY anzahl DESC
@@ -245,13 +258,14 @@ def abfrage_zeitreihe_neue_jobs(engine: DuckDBEngine, tage: int = 30) -> List[di
 
 
 def abfrage_gehaltsverteilung(engine: DuckDBEngine, gruppierung: str = "kategorie") -> List[dict[str, Any]]:
-    erlaubt = {"kategorie", "stadt", "bundesland"}
+    erlaubt = {"kategorie", "stadt", "bundesland", "quelle"}
     if gruppierung not in erlaubt:
         raise ValueError(f"Unerlaubte Gruppierung: {gruppierung}")
     spalte = {
         "kategorie": "f.kategorie",
         "stadt": "s.stadt",
         "bundesland": "s.bundesland",
+        "quelle": "f.quelle",
     }[gruppierung]
     sql = f"""
         SELECT {spalte} AS gruppe,
@@ -270,12 +284,23 @@ def abfrage_gehaltsverteilung(engine: DuckDBEngine, gruppierung: str = "kategori
     return engine.abfragen(sql)
 
 
+def abfrage_quellen_verteilung(engine: DuckDBEngine) -> List[dict[str, Any]]:
+    """Wie viele Stellen kommen aus welcher Quelle."""
+    sql = f"""
+        SELECT quelle,
+               COUNT(*)::BIGINT AS anzahl_jobs,
+               AVG(gehalt_mittel) AS gehalt_mittel
+        FROM {_FAKT}
+        WHERE quelle IS NOT NULL
+        GROUP BY quelle
+        ORDER BY anzahl_jobs DESC
+    """
+    return engine.abfragen(sql)
+
+
 def _keyset_parsen(wert: str) -> tuple[str, str]:
     parts = wert.split("|", 1)
     if len(parts) != 2:
         raise ValueError("Keyset muss im Format <iso8601>|<id> uebergeben werden")
-    # Bei Uebertragung via URL wird '+' (im Zeitzonen-Offset) zu Leerzeichen,
-    # weil application/x-www-form-urlencoded das so vorsieht. Wir setzen das
-    # zurueck, damit DuckDB den ISO-8601-Zeitstempel korrekt parsen kann.
     zeitstempel = parts[0].replace(" ", "+")
     return zeitstempel, parts[1]

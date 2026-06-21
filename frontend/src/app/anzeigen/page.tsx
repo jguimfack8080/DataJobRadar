@@ -8,7 +8,7 @@ import { FehlerAnzeige } from '@/components/ui/fehler-anzeige';
 import { LeererZustand } from '@/components/ui/leerer-zustand';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FilterFacetten, Job, JobsFilter, JobsSeite } from '@/lib/api';
-import { ApiFehler, endpunkte, holen } from '@/lib/api';
+import { ApiFehler, QUELLEN_BESCHRIFTUNG, endpunkte, holen } from '@/lib/api';
 import { formatDatum, formatGehalt } from '@/lib/utils';
 
 const SEITENGROESSE = 25;
@@ -41,6 +41,8 @@ function filterAusUrl(params: URLSearchParams): FilterZustand {
   if (mitGehalt === 'true' || mitGehalt === '1') aus.nur_mit_gehalt = true;
   const skills = params.getAll('skill');
   if (skills.length > 0) aus.skill = skills;
+  const quellen = params.getAll('quelle');
+  if (quellen.length > 0) aus.quelle = quellen;
   return aus;
 }
 
@@ -138,9 +140,7 @@ function AnzeigenInhalt() {
   const setZahl =
     (feld: keyof FilterZustand) => (ereignis: React.ChangeEvent<HTMLInputElement>) => {
       const wert = ereignis.target.value;
-      setEntwurf(
-        (alt) => ({ ...alt, [feld]: wert ? Number(wert) : undefined }) as FilterZustand
-      );
+      setEntwurf((alt) => ({ ...alt, [feld]: wert ? Number(wert) : undefined }) as FilterZustand);
     };
 
   const skillsUmschalten = (skill: string) => {
@@ -154,13 +154,24 @@ function AnzeigenInhalt() {
     });
   };
 
+  const quellenUmschalten = (quelle: string) => {
+    setEntwurf((alt) => {
+      const aktuell = alt.quelle ?? [];
+      const enthalten = aktuell.includes(quelle);
+      return {
+        ...alt,
+        quelle: enthalten ? aktuell.filter((q) => q !== quelle) : [...aktuell, quelle],
+      };
+    });
+  };
+
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Stellenanzeigen</h1>
         <p className="text-sm text-muted-foreground">
-          Vollstaendige Filtersuite. Klicken Sie eine Karte an, um die Original-Anzeige bei Adzuna
-          zu oeffnen.
+          Vollstaendige Filtersuite ueber alle Quellen. Klicken Sie eine Karte an, um zur
+          Original-Anzeige zu springen.
         </p>
       </header>
 
@@ -180,7 +191,6 @@ function AnzeigenInhalt() {
               type="button"
               onClick={() => setFilterOffen((v) => !v)}
               className="rounded-md border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-              aria-expanded={filterOffen}
             >
               {filterOffen ? 'Einklappen' : 'Mehr Filter'}
             </button>
@@ -227,12 +237,37 @@ function AnzeigenInhalt() {
                   className={eingabeStil}
                 />
                 <datalist id="staedte-facetten">
-                  {facetten?.staedte.map((s) => (
-                    <option key={s} value={s} />
-                  ))}
+                  {facetten?.staedte.map((s) => <option key={s} value={s} />)}
                 </datalist>
               </Feld>
             </div>
+
+            {facetten && facetten.quellen.length > 0 ? (
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Datenquellen (Mehrfachauswahl, ODER-Verknuepfung)
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {facetten.quellen.map((quelle) => {
+                    const aktiv = (entwurf.quelle ?? []).includes(quelle);
+                    return (
+                      <button
+                        type="button"
+                        key={quelle}
+                        onClick={() => quellenUmschalten(quelle)}
+                        className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                          aktiv
+                            ? 'bg-foreground text-background'
+                            : 'bg-card text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {QUELLEN_BESCHRIFTUNG[quelle] ?? quelle}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
 
             {filterOffen ? (
               <>
@@ -245,9 +280,7 @@ function AnzeigenInhalt() {
                     >
                       <option value="">- alle -</option>
                       {facetten?.bundeslaender.map((b) => (
-                        <option key={b} value={b}>
-                          {b}
-                        </option>
+                        <option key={b} value={b}>{b}</option>
                       ))}
                     </select>
                   </Feld>
@@ -259,9 +292,7 @@ function AnzeigenInhalt() {
                     >
                       <option value="">- alle -</option>
                       {facetten?.kategorien.map((k) => (
-                        <option key={k} value={k}>
-                          {k}
-                        </option>
+                        <option key={k} value={k}>{k}</option>
                       ))}
                     </select>
                   </Feld>
@@ -283,9 +314,7 @@ function AnzeigenInhalt() {
                     >
                       <option value="">- beliebig -</option>
                       {facetten?.vertragstypen.map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
+                        <option key={v} value={v}>{v}</option>
                       ))}
                     </select>
                   </Feld>
@@ -297,9 +326,7 @@ function AnzeigenInhalt() {
                     >
                       <option value="">- beliebig -</option>
                       {facetten?.vertragszeiten.map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
+                        <option key={v} value={v}>{v}</option>
                       ))}
                     </select>
                   </Feld>
@@ -466,13 +493,21 @@ function Feld({ label, children }: { label: string; children: React.ReactNode })
 
 function JobKarte({ job }: { job: Job }) {
   const ortszeile = [job.unternehmen, job.stadt, job.bundesland].filter(Boolean).join(' - ');
+  const quellenLabel = job.quelle
+    ? QUELLEN_BESCHRIFTUNG[job.quelle] ?? job.quelle
+    : null;
   const Inhalt = (
     <div className="grid gap-2 sm:grid-cols-[1fr,auto] sm:items-start">
       <div>
-        <p className="flex items-center gap-2 text-sm font-medium">
+        <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
           <span>{job.titel}</span>
           {job.angebots_url ? (
             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+          ) : null}
+          {quellenLabel ? (
+            <span className="rounded-full border bg-card px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              {quellenLabel}
+            </span>
           ) : null}
         </p>
         {ortszeile ? <p className="text-xs text-muted-foreground">{ortszeile}</p> : null}
@@ -510,7 +545,7 @@ function JobKarte({ job }: { job: Job }) {
         target="_blank"
         rel="noopener noreferrer"
         className="block rounded-md p-2 -m-2 transition-colors hover:bg-muted/60 focus:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label={`Anzeige '${job.titel}' bei Adzuna oeffnen`}
+        aria-label={`Anzeige '${job.titel}' bei ${quellenLabel ?? 'der Quelle'} oeffnen`}
       >
         {Inhalt}
       </a>

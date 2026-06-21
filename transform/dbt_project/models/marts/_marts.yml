@@ -19,10 +19,17 @@ models:
       - name: datum
         tests: [not_null, unique]
   - name: fact_jobs
-    description: "Faktentabelle der Stellenangebote."
+    description: "Faktentabelle der Stellenangebote, dedupliziert ueber Cross-Source-Signatur und Quellen-Prioritaet."
     columns:
-      - name: adzuna_id
+      - name: job_id
+        description: "Deterministischer Primaerschluessel: sha256(quelle:quell_id), 24 Zeichen."
         tests: [not_null, unique]
+      - name: quelle
+        description: "Datenquelle: bundesagentur, adzuna, muse, remotive oder jobicy."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['bundesagentur', 'adzuna', 'muse', 'remotive', 'jobicy']
       - name: unternehmens_id
         tests:
           - relationships:
@@ -36,12 +43,12 @@ models:
   - name: fact_skills
     description: "Faktentabelle der je Stellenanzeige extrahierten Faehigkeiten."
     columns:
-      - name: adzuna_id
+      - name: job_id
         tests:
           - not_null
           - relationships:
               to: ref('fact_jobs')
-              field: adzuna_id
+              field: job_id
       - name: skill
         tests:
           - not_null

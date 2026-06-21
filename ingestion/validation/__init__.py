@@ -1,3 +1,3 @@
-from ingestion.validation.schemata import validiere_adzuna_treffer, ValidierungsErgebnis
+from ingestion.validation.schemata import ValidierungsErgebnis, validiere_anzeigen
 
-__all__ = ["validiere_adzuna_treffer", "ValidierungsErgebnis"]
+__all__ = ["ValidierungsErgebnis", "validiere_anzeigen"]

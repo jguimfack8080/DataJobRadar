@@ -17,10 +17,11 @@ router = APIRouter(prefix="/cities", tags=["Staedte"])
 @router.get(
     "",
     response_model=List[StadtKennzahl],
-    summary="Top Staedte nach Anzahl Anzeigen",
+    summary="Staedte nach Anzahl Anzeigen (paginiert)",
 )
 def top_staedte(
     engine: Annotated[DuckDBEngine, Depends(get_engine)],
-    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0, le=10000)] = 0,
 ) -> List[StadtKennzahl]:
-    return StatsService(engine).top_staedte(limit=limit)
+    return StatsService(engine).top_staedte(limit=limit, offset=offset)

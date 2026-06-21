@@ -214,7 +214,9 @@ def abfrage_top_skills(engine: DuckDBEngine, limit: int = 20) -> List[dict[str, 
     return engine.abfragen(sql, [limit])
 
 
-def abfrage_top_unternehmen(engine: DuckDBEngine, limit: int = 20) -> List[dict[str, Any]]:
+def abfrage_top_unternehmen(
+    engine: DuckDBEngine, limit: int = 20, offset: int = 0
+) -> List[dict[str, Any]]:
     sql = f"""
         SELECT d.unternehmen,
                COUNT(*)::BIGINT AS anzahl_jobs,
@@ -223,13 +225,15 @@ def abfrage_top_unternehmen(engine: DuckDBEngine, limit: int = 20) -> List[dict[
         JOIN {_DIM_UNTERNEHMEN} d ON d.unternehmens_id = f.unternehmens_id
         WHERE d.unternehmen IS NOT NULL
         GROUP BY d.unternehmen
-        ORDER BY anzahl_jobs DESC
-        LIMIT ?
+        ORDER BY anzahl_jobs DESC, d.unternehmen ASC
+        LIMIT ? OFFSET ?
     """
-    return engine.abfragen(sql, [limit])
+    return engine.abfragen(sql, [limit, offset])
 
 
-def abfrage_top_staedte(engine: DuckDBEngine, limit: int = 20) -> List[dict[str, Any]]:
+def abfrage_top_staedte(
+    engine: DuckDBEngine, limit: int = 20, offset: int = 0
+) -> List[dict[str, Any]]:
     sql = f"""
         SELECT s.stadt,
                s.bundesland,
@@ -239,10 +243,10 @@ def abfrage_top_staedte(engine: DuckDBEngine, limit: int = 20) -> List[dict[str,
         JOIN {_DIM_STANDORT} s ON s.standort_id = f.standort_id
         WHERE s.stadt IS NOT NULL
         GROUP BY s.stadt, s.bundesland
-        ORDER BY anzahl_jobs DESC
-        LIMIT ?
+        ORDER BY anzahl_jobs DESC, s.stadt ASC
+        LIMIT ? OFFSET ?
     """
-    return engine.abfragen(sql, [limit])
+    return engine.abfragen(sql, [limit, offset])
 
 
 def abfrage_zeitreihe_neue_jobs(engine: DuckDBEngine, tage: int = 30) -> List[dict[str, Any]]:

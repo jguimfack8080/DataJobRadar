@@ -55,9 +55,9 @@ class StatsService:
             for z in zeilen
         ]
 
-    @cachen(lambda self, limit=20: ("unternehmen", limit))
-    def top_unternehmen(self, limit: int = 20) -> List[UnternehmensKennzahl]:
-        zeilen = abfrage_top_unternehmen(self._engine, limit=limit)
+    @cachen(lambda self, limit=20, offset=0: ("unternehmen", limit, offset))
+    def top_unternehmen(self, limit: int = 20, offset: int = 0) -> List[UnternehmensKennzahl]:
+        zeilen = abfrage_top_unternehmen(self._engine, limit=limit, offset=offset)
         return [
             UnternehmensKennzahl(
                 unternehmen=z["unternehmen"],
@@ -67,9 +67,9 @@ class StatsService:
             for z in zeilen
         ]
 
-    @cachen(lambda self, limit=20: ("staedte", limit))
-    def top_staedte(self, limit: int = 20) -> List[StadtKennzahl]:
-        zeilen = abfrage_top_staedte(self._engine, limit=limit)
+    @cachen(lambda self, limit=20, offset=0: ("staedte", limit, offset))
+    def top_staedte(self, limit: int = 20, offset: int = 0) -> List[StadtKennzahl]:
+        zeilen = abfrage_top_staedte(self._engine, limit=limit, offset=offset)
         return [
             StadtKennzahl(
                 stadt=z["stadt"],

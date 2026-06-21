@@ -17,10 +17,11 @@ router = APIRouter(prefix="/companies", tags=["Unternehmen"])
 @router.get(
     "",
     response_model=List[UnternehmensKennzahl],
-    summary="Top Unternehmen nach Anzahl Anzeigen",
+    summary="Unternehmen nach Anzahl Anzeigen (paginiert)",
 )
 def top_unternehmen(
     engine: Annotated[DuckDBEngine, Depends(get_engine)],
-    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0, le=10000)] = 0,
 ) -> List[UnternehmensKennzahl]:
-    return StatsService(engine).top_unternehmen(limit=limit)
+    return StatsService(engine).top_unternehmen(limit=limit, offset=offset)

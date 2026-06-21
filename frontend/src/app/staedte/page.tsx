@@ -1,45 +1,152 @@
 'use client';
 
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FehlerAnzeige } from '@/components/ui/fehler-anzeige';
 import { LeererZustand } from '@/components/ui/leerer-zustand';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BalkenDiagramm } from '@/components/charts/balken-diagramm';
-import { useApi } from '@/hooks/use-api';
+import { ApiFehler, holen } from '@/lib/api';
 import type { StadtKennzahl } from '@/lib/api';
+import { formatGehalt, formatZahl } from '@/lib/utils';
+
+const SEITENGROESSE = 50;
 
 export default function StaedteSeite() {
-  const staedte = useApi<StadtKennzahl[]>('/cities?limit=20');
+  const [eintraege, setEintraege] = useState<StadtKennzahl[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [ladend, setLadend] = useState<'init' | 'mehr' | null>('init');
+  const [fehler, setFehler] = useState<string | null>(null);
+  const [endeErreicht, setEndeErreicht] = useState(false);
+
+  const seiteHolen = useCallback(async (startOffset: number) => {
+    try {
+      const ergebnis = await holen<StadtKennzahl[]>(
+        `/cities?limit=${SEITENGROESSE}&offset=${startOffset}`
+      );
+      setEintraege((alt) => (startOffset === 0 ? ergebnis : [...alt, ...ergebnis]));
+      if (ergebnis.length < SEITENGROESSE) setEndeErreicht(true);
+      setFehler(null);
+    } catch (problem) {
+      if (problem instanceof ApiFehler) setFehler(problem.meldung);
+      else if (problem instanceof Error) setFehler(problem.message);
+      else setFehler('Unbekannter Fehler');
+    } finally {
+      setLadend(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    void seiteHolen(0);
+  }, [seiteHolen]);
+
+  const mehrLaden = () => {
+    const naechsterOffset = offset + SEITENGROESSE;
+    setOffset(naechsterOffset);
+    setLadend('mehr');
+    void seiteHolen(naechsterOffset);
+  };
+
+  const diagrammDaten = eintraege.slice(0, 20).map((eintrag) => ({
+    beschriftung: eintrag.stadt,
+    wert: eintrag.anzahl_jobs,
+    ziel: `/anzeigen/?stadt=${encodeURIComponent(eintrag.stadt)}`,
+  }));
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Staedte</h1>
         <p className="text-sm text-muted-foreground">
-          Regionale Verteilung. Balken anklicken um die Anzeigen der Stadt zu sehen.
+          Regionale Verteilung. Klicken Sie einen Balken oder eine Zeile an, um die
+          Anzeigen der Stadt zu sehen.
         </p>
       </header>
+
       <Card>
         <CardHeader>
-          <CardTitle>Top 20 Staedte</CardTitle>
+          <CardTitle>Top 20 (visuell)</CardTitle>
         </CardHeader>
         <CardContent>
-          {staedte.isLoading && <Skeleton className="h-96 w-full" />}
-          {staedte.error && <FehlerAnzeige meldung="Staedte konnten nicht geladen werden." />}
-          {!staedte.isLoading && !staedte.error && (!staedte.data || staedte.data.length === 0) && (
+          {ladend === 'init' && <Skeleton className="h-96 w-full" />}
+          {fehler && <FehlerAnzeige meldung={fehler} />}
+          {ladend !== 'init' && !fehler && diagrammDaten.length > 0 && (
+            <div className="h-96">
+              <BalkenDiagramm daten={diagrammDaten} hoehe={384} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            Alle Staedte
+            {eintraege.length > 0 ? (
+              <span className="ml-2 text-xs text-muted-foreground">
+                {eintraege.length} {endeErreicht ? 'angezeigt' : '(weitere verfuegbar)'}
+              </span>
+            ) : null}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {ladend === 'init' && <Skeleton className="h-64 w-full" />}
+          {!ladend && !fehler && eintraege.length === 0 && (
             <LeererZustand titel="Noch keine Stadt-Daten vorhanden." />
           )}
-          {!staedte.isLoading && !staedte.error && staedte.data && staedte.data.length > 0 && (
-            <div className="h-96">
-              <BalkenDiagramm
-                daten={staedte.data.map((eintrag) => ({
-                  beschriftung: eintrag.stadt,
-                  wert: eintrag.anzahl_jobs,
-                  ziel: `/anzeigen/?stadt=${encodeURIComponent(eintrag.stadt)}`,
-                }))}
-                hoehe={384}
-              />
-            </div>
+          {eintraege.length > 0 && (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full table-auto text-sm">
+                  <thead>
+                    <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
+                      <th className="px-3 py-2">Stadt</th>
+                      <th className="px-3 py-2">Bundesland</th>
+                      <th className="px-3 py-2 text-right">Anzeigen</th>
+                      <th className="px-3 py-2 text-right">Mittleres Gehalt</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {eintraege.map((eintrag) => (
+                      <tr key={`${eintrag.stadt}-${eintrag.bundesland}`} className="hover:bg-muted/40">
+                        <td className="px-3 py-2">
+                          <Link
+                            href={`/anzeigen/?stadt=${encodeURIComponent(eintrag.stadt)}`}
+                            className="block rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            {eintrag.stadt}
+                          </Link>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {eintrag.bundesland ?? '-'}
+                        </td>
+                        <td className="kennzahl px-3 py-2 text-right">
+                          {formatZahl(eintrag.anzahl_jobs)}
+                        </td>
+                        <td className="kennzahl px-3 py-2 text-right">
+                          {formatGehalt(eintrag.gehalt_mittel)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-6 flex flex-col items-center gap-2">
+                {!endeErreicht ? (
+                  <button
+                    type="button"
+                    onClick={mehrLaden}
+                    disabled={ladend === 'mehr'}
+                    className="inline-flex items-center justify-center rounded-md border bg-card px-5 py-2 text-sm font-medium text-foreground shadow-card transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {ladend === 'mehr' ? 'Wird geladen...' : 'Mehr laden'}
+                  </button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Alle Staedte angezeigt.</p>
+                )}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

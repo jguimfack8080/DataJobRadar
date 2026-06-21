@@ -9,7 +9,7 @@ import { useApi } from '@/hooks/use-api';
 import type { SkillKennzahl } from '@/lib/api';
 
 export default function SkillsSeite() {
-  const skills = useApi<SkillKennzahl[]>('/skills?limit=30');
+  const skills = useApi<SkillKennzahl[]>('/skills?limit=100');
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">

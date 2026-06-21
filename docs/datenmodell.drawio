@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="Datenmodell" id="datenmodell">
+    <mxGraphModel dx="1300" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t" value="Sternschema (Gold-Schicht, materialisiert von dbt)" style="text;html=1;align=center;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="Eine Faktentabelle pro Anzeige, vier Dimensionen plus eine Skill-Faktentabelle" style="text;html=1;align=center;fontSize=12;fontStyle=2;fontColor=#444444;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="fact" value="fact_jobs&#10;Faktentabelle Stellenanzeigen&#10;&#10;PK adzuna_id&#10;FK unternehmens_id&#10;FK standort_id&#10;titel, kategorie&#10;gehalt_min/max/mittel&#10;vertragstyp, vertragszeit&#10;veroeffentlicht_am&#10;skills[], angebots_url" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="220" width="320" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="dco" value="dim_company&#10;Dimension Unternehmen&#10;&#10;PK unternehmens_id&#10;unternehmen&#10;unternehmen_normalisiert" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="260" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="dloc" value="dim_location&#10;Dimension Standort&#10;&#10;PK standort_id&#10;stadt&#10;bundesland&#10;region" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="360" width="260" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ddat" value="dim_date&#10;Datumsdimension&#10;&#10;PK datum&#10;jahr, quartal, monat&#10;kalenderwoche&#10;wochentag_nr&#10;wochentag (Text)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="860" y="140" width="260" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="fsk" value="fact_skills&#10;Skill je Anzeige (M:N)&#10;&#10;FK adzuna_id&#10;skill (kanonisch)&#10;gewichtung" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="860" y="360" width="260" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="re1" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;startArrow=ERmany;endArrow=ERone;" edge="1" parent="1" source="dco" target="fact">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="re2" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;startArrow=ERmany;endArrow=ERone;" edge="1" parent="1" source="dloc" target="fact">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="re3" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;startArrow=ERmany;endArrow=ERone;" edge="1" parent="1" source="fact" target="ddat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="re4" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;startArrow=ERone;endArrow=ERmany;" edge="1" parent="1" source="fact" target="fsk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

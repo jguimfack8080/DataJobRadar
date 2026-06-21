@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="Medallion" id="medallion">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t" value="Medallion Architecture - Bronze / Silver / Gold" style="text;html=1;align=center;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1020" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="Schrittweise Veredelung der Adzuna-Daten in drei Schichten" style="text;html=1;align=center;fontSize=12;fontColor=#444444;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1020" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="bronze" value="Bronze&#10;Roh, unveraendert, auditierbar&#10;&#10;Inhalt: validierte Adzuna-Antworten pro Tag und Kategorie&#10;Format: Parquet mit Zstd-Kompression&#10;Partitionierung: jahr/monat/tag/kategorie&#10;Garantien: idempotent, Adzuna-ID-dedupliziert, Quarantaene fuer Schema-Fehler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;spacingRight=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="320" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="silver" value="Silver&#10;Bereinigt, normalisiert, angereichert&#10;&#10;Inhalt: eine Zeile pro eindeutiger Anzeige je Tag&#10;Engine: DuckDB SQL, in-memory&#10;Transformationen: Standort-/Unternehmens-Normalisierung,&#10;Gehalt-Mittelwert, Skill-Extraktion ueber Regex-Taxonomie&#10;Format: Parquet, eine Datei je Datum" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;spacingRight=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="320" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="gold" value="Gold&#10;Analytisch optimiert, Sternschema&#10;&#10;Inhalt: fact_jobs, fact_skills,&#10;dim_company, dim_location, dim_date&#10;Engine: dbt Core mit dbt-duckdb&#10;Qualitaet: dbt tests (unique, not_null, relationships, accepted_values)&#10;Konsum: FastAPI liest read-only und liefert typisierte JSON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;spacingRight=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="740" y="100" width="320" height="420" as="geometry" />
+        </mxCell>
+        <mxCell id="bs" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="bronze" target="silver">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sg" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="silver" target="gold">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="foot" value="Jede Schicht ist eigenstaendig auditierbar; Probleme lassen sich auf die genaue Stufe zurueckverfolgen." style="text;html=1;align=center;fontSize=12;fontStyle=2;fontColor=#444444;" vertex="1" parent="1">
+          <mxGeometry x="40" y="550" width="1020" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

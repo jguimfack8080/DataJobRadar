@@ -69,7 +69,8 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
             f.vertragszeit,
             f.veroeffentlicht_am,
             f.kategorie,
-            f.skills
+            f.skills,
+            f.angebots_url
         FROM {_FAKT} f
         LEFT JOIN {_DIM_UNTERNEHMEN} d ON d.unternehmens_id = f.unternehmens_id
         LEFT JOIN {_DIM_STANDORT} s ON s.standort_id = f.standort_id

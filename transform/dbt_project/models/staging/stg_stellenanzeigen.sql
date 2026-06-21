@@ -2,6 +2,15 @@
 
 with quelle as (
     select * from {{ source('silver', 'stellenanzeigen') }}
+    where adzuna_id is not null
+),
+dedup as (
+    select *,
+           row_number() over (
+               partition by adzuna_id
+               order by abruf_zeitpunkt desc nulls last
+           ) as rang
+    from quelle
 )
 select
     adzuna_id,
@@ -22,6 +31,7 @@ select
     kategorie,
     veroeffentlicht_am,
     abruf_zeitpunkt,
-    skills
-from quelle
-where adzuna_id is not null
+    skills,
+    angebots_url
+from dedup
+where rang = 1

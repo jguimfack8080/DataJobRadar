@@ -22,6 +22,10 @@ class Job(BaseModel):
     veroeffentlicht_am: Optional[datetime] = None
     kategorie: Optional[str] = None
     skills: List[str] = Field(default_factory=list)
+    angebots_url: Optional[str] = Field(
+        default=None,
+        description="Direkter Link zur Original-Stellenanzeige bei Adzuna.",
+    )
 
 
 class JobsSeite(BaseModel):

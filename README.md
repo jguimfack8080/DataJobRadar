@@ -154,3 +154,24 @@ festgehalten.
 - [Datenfluss](docs/datenfluss.md)
 - [API-Referenz](docs/api.md)
 - [ADRs](docs/adr/)
+
+## Diagramme
+
+Sechs schwarz-weisse, druckfreundliche Diagramme. Sie sind im Repository
+abgelegt und werden zur Build-Zeit auch in das Dashboard kopiert, sodass sie
+unter `/diagramme/<name>.svg` und in der `/wiki/`-Seite erreichbar sind.
+
+| Diagramm                                    | Inhalt                                                       |
+|---------------------------------------------|--------------------------------------------------------------|
+| [Systemarchitektur](docs/architektur.svg)   | Schichten, Komponenten und Verantwortlichkeiten im Ueberblick|
+| [Datenfluss](docs/datenfluss.svg)           | Adzuna bis Dashboard auf einer Linie                         |
+| [Medallion-Schichten](docs/medallion.svg)   | Bronze, Silver, Gold mit Aufgaben und Garantien              |
+| [Airflow-DAG](docs/airflow_dag.svg)         | Reihenfolge, Retries, Benachrichtigung                       |
+| [Datenmodell](docs/datenmodell.svg)         | Sternschema mit fact_jobs, fact_skills und Dimensionen       |
+| [Deployment-Topologie](docs/deployment.svg) | Host-Nginx, Docker-Stack, Volumes und Sicherheitsgrenzen     |
+
+## Live-Dashboard
+
+- Uebersicht: `https://pgadmin.thetransporterlabs.de/`
+- Stellenanzeigen mit Mehr-Laden-Pagination und direkten Links zur Adzuna-Anzeige: `/anzeigen/`
+- Wiki-Seite mit Projekt-Erklaerung, Architektur und allen Diagrammen: `/wiki/`

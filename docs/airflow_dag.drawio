@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="AirflowDAG" id="airflow_dag">
+    <mxGraphModel dx="1300" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t" value="Airflow-DAG: arbeitsmarkt_data_pipeline" style="text;html=1;align=center;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="Owner: Jordan Jeuna, Schedule: taeglich 06:00 UTC, max_active_runs=1, email_on_failure" style="text;html=1;align=center;fontSize=12;fontStyle=2;fontColor=#444444;" vertex="1" parent="1">
+          <mxGeometry x="40" y="50" width="1120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ing" value="ingestion_lauf&#10;PythonOperator&#10;retries 3, exp. backoff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="170" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sv" value="silver_transformation&#10;PythonOperator&#10;DuckDB SQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="250" y="170" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gd" value="gold_initialisieren&#10;PythonOperator&#10;DuckDB Schema" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="460" y="170" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="dp" value="dbt_deps&#10;BashOperator&#10;dbt deps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="670" y="170" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rn" value="dbt_run&#10;BashOperator&#10;dbt run" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="840" y="170" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ts" value="dbt_test&#10;BashOperator&#10;dbt test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="170" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="ing" target="sv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="sv" target="gd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="gd" target="dp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="dp" target="rn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="endArrow=classic;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="rn" target="ts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="notes" value="Idempotenz: jeder Lauf produziert bei gleichem Datum dasselbe Ergebnis. Anzeigen werden ueber Adzuna-ID dedupliziert.&#10;Beobachtung: strukturierte JSON-Logs mit Korrelationskennung pro Lauf; Quarantaenezaehler im Lauf-Bericht.&#10;Fehlerbehandlung: Quota-Erschoepfung der Adzuna-API fuehrt zu kontrolliertem Abbruch, nicht zu fehlerhaften Teildaten.&#10;Benachrichtigung: finale Task-Fehler triggern eine SMTP-Mail an jeunaj3@gmail.com." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;align=left;verticalAlign=top;spacingLeft=12;spacingTop=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="300" width="1090" height="120" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

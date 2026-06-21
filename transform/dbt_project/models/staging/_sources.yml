@@ -9,10 +9,9 @@ sources:
         description: "Pro Adzuna-Stellenanzeige eine Zeile mit normalisierten Feldern."
         columns:
           - name: adzuna_id
-            description: "Stabile Kennung der Adzuna-Stellenanzeige."
+            description: "Stabile Kennung der Adzuna-Stellenanzeige. Kann auf Source-Ebene mehrfach auftreten (mehrere Abruftage); die Deduplizierung erfolgt im Staging-Modell."
             tests:
               - not_null
-              - unique
           - name: titel
             tests:
               - not_null

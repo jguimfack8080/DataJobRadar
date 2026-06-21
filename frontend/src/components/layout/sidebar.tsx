@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, Briefcase, Building2, LineChart, MapPin, Sparkles } from 'lucide-react';
+import { BarChart3, BookOpen, Briefcase, Building2, LineChart, MapPin, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
@@ -12,6 +12,7 @@ const navigation = [
   { name: 'Unternehmen', href: '/unternehmen', icon: Building2 },
   { name: 'Staedte', href: '/staedte', icon: MapPin },
   { name: 'Trends', href: '/trends', icon: LineChart },
+  { name: 'Wiki', href: '/wiki', icon: BookOpen },
 ];
 
 export function Sidebar() {

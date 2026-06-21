@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" font-family="Inter, system-ui, sans-serif" font-size="13">
+  <style>
+    .knoten { fill: #ffffff; stroke: #000000; stroke-width: 1.5; }
+    .pfeil { stroke: #000000; stroke-width: 1.5; fill: none; }
+    .titel { font-weight: 700; }
+    .text { fill: #000000; text-anchor: middle; dominant-baseline: middle; }
+    .links { text-anchor: start; }
+    .gruppentitel { font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+    .meta { font-size: 11px; fill: #555555; }
+  </style>
+  <rect width="100%" height="100%" fill="#ffffff" />
+
+  <text x="600" y="36" class="text titel" font-size="18">Systemarchitektur Data Job Radar Deutschland</text>
+  <text x="600" y="58" class="text meta">Sechs Schichten, klar voneinander getrennt</text>
+
+  <text x="60" y="100" class="text links gruppentitel">QUELLE</text>
+  <rect x="60" y="110" width="220" height="70" rx="10" class="knoten" />
+  <text x="170" y="135" class="text titel">Adzuna API</text>
+  <text x="170" y="155" class="text meta">extern, REST, Land: de</text>
+
+  <text x="60" y="210" class="text links gruppentitel">INGESTION</text>
+  <rect x="60" y="220" width="260" height="70" rx="10" class="knoten" />
+  <text x="190" y="245" class="text titel">Ingestion-Pipeline</text>
+  <text x="190" y="265" class="text meta">httpx + tenacity, validiert, idempotent</text>
+
+  <text x="60" y="320" class="text links gruppentitel">DATA LAKE</text>
+  <rect x="60" y="330" width="170" height="70" rx="10" class="knoten" />
+  <text x="145" y="355" class="text titel">Bronze</text>
+  <text x="145" y="372" class="text meta">Parquet, Zstd</text>
+
+  <rect x="250" y="330" width="170" height="70" rx="10" class="knoten" />
+  <text x="335" y="355" class="text titel">Silver</text>
+  <text x="335" y="372" class="text meta">DuckDB, Skills</text>
+
+  <rect x="440" y="330" width="170" height="70" rx="10" class="knoten" />
+  <text x="525" y="355" class="text titel">Gold</text>
+  <text x="525" y="372" class="text meta">Sternschema</text>
+
+  <text x="60" y="430" class="text links gruppentitel">TRANSFORMATION</text>
+  <rect x="60" y="440" width="260" height="70" rx="10" class="knoten" />
+  <text x="190" y="465" class="text titel">dbt Core</text>
+  <text x="190" y="482" class="text meta">Staging, Marts, Tests</text>
+
+  <text x="60" y="540" class="text links gruppentitel">WAREHOUSE</text>
+  <rect x="60" y="550" width="260" height="70" rx="10" class="knoten" />
+  <text x="190" y="575" class="text titel">DuckDB</text>
+  <text x="190" y="592" class="text meta">prozessintern, kein Server</text>
+
+  <text x="60" y="650" class="text links gruppentitel">SERVICE</text>
+  <rect x="60" y="660" width="180" height="70" rx="10" class="knoten" />
+  <text x="150" y="685" class="text titel">FastAPI</text>
+  <text x="150" y="702" class="text meta">Pydantic, Cache</text>
+
+  <rect x="260" y="660" width="200" height="70" rx="10" class="knoten" />
+  <text x="360" y="685" class="text titel">Next.js Dashboard</text>
+  <text x="360" y="702" class="text meta">statisch exportiert</text>
+
+  <text x="700" y="100" class="text links gruppentitel">BETRIEB</text>
+  <rect x="700" y="110" width="240" height="70" rx="10" class="knoten" />
+  <text x="820" y="135" class="text titel">Apache Airflow</text>
+  <text x="820" y="155" class="text meta">Scheduler + Webserver</text>
+
+  <rect x="960" y="110" width="180" height="70" rx="10" class="knoten" />
+  <text x="1050" y="135" class="text titel">Postgres</text>
+  <text x="1050" y="155" class="text meta">nur Metadaten</text>
+
+  <rect x="700" y="220" width="240" height="70" rx="10" class="knoten" />
+  <text x="820" y="245" class="text titel">Docker Compose</text>
+  <text x="820" y="265" class="text meta">Healthchecks, Volumes</text>
+
+  <rect x="960" y="220" width="180" height="70" rx="10" class="knoten" />
+  <text x="1050" y="245" class="text titel">Host-Nginx</text>
+  <text x="1050" y="265" class="text meta">HTTPS Terminator</text>
+
+  <text x="700" y="330" class="text links gruppentitel">QUALITAET</text>
+  <rect x="700" y="340" width="440" height="80" rx="10" class="knoten" />
+  <text x="920" y="365" class="text titel">dbt Tests + Pydantic + Quarantaene</text>
+  <text x="920" y="385" class="text meta">unique, not_null, relationships,</text>
+  <text x="920" y="402" class="text meta">accepted_values, Schema-Pruefung</text>
+
+  <text x="700" y="450" class="text links gruppentitel">BEOBACHTBARKEIT</text>
+  <rect x="700" y="460" width="440" height="80" rx="10" class="knoten" />
+  <text x="920" y="485" class="text titel">structlog + Korrelationskennung</text>
+  <text x="920" y="505" class="text meta">JSON-Logs, Healthchecks, OpenAPI Docs</text>
+
+  <text x="700" y="570" class="text links gruppentitel">SICHERHEIT</text>
+  <rect x="700" y="580" width="440" height="80" rx="10" class="knoten" />
+  <text x="920" y="605" class="text titel">.env + Rate Limit + CORS</text>
+  <text x="920" y="625" class="text meta">Loopback-Bindung, keine Secrets im Code</text>
+
+  <rect x="60" y="660" width="400" height="0" />
+
+  <path class="pfeil" d="M 170 180 L 170 220" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 190 290 L 145 330" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 230 365 L 250 365" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 420 365 L 440 365" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 525 400 L 190 440" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 190 510 L 190 550" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 190 620 L 150 660" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 240 695 L 260 695" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 700 145 L 320 250" marker-end="url(#aps)" />
+  <path class="pfeil" d="M 460 705 L 700 405" marker-end="url(#aps)" />
+
+  <defs>
+    <marker id="aps" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#000000" />
+    </marker>
+  </defs>
+</svg>

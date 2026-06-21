@@ -24,7 +24,8 @@ select
     q.waehrung,
     q.veroeffentlicht_am,
     q.abruf_zeitpunkt,
-    q.skills
+    q.skills,
+    q.angebots_url
 from quelle q
 left join unternehmen u
     on u.unternehmen_normalisiert = coalesce(nullif(q.unternehmen_normalisiert, ''), 'unbekannt')

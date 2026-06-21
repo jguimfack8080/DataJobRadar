@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" font-family="Inter, system-ui, sans-serif" font-size="14">
+  <style>
+    .knoten { fill: #ffffff; stroke: #000000; stroke-width: 1.5; }
+    .text { fill: #000000; text-anchor: middle; dominant-baseline: middle; }
+    .pfeil { stroke: #000000; stroke-width: 1.5; fill: none; }
+  </style>
+  <rect width="100%" height="100%" fill="#ffffff" />
+  <g>
+    <rect class="knoten" x="20" y="120" width="120" height="60" rx="8" />
+    <text class="text" x="80" y="150">Adzuna API</text>
+    <rect class="knoten" x="170" y="120" width="140" height="60" rx="8" />
+    <text class="text" x="240" y="150">Ingestion</text>
+    <rect class="knoten" x="340" y="120" width="120" height="60" rx="8" />
+    <text class="text" x="400" y="150">Bronze</text>
+    <rect class="knoten" x="490" y="120" width="120" height="60" rx="8" />
+    <text class="text" x="550" y="150">Silver</text>
+    <rect class="knoten" x="640" y="120" width="140" height="60" rx="8" />
+    <text class="text" x="710" y="150">dbt Core (Gold)</text>
+    <rect class="knoten" x="810" y="40" width="130" height="60" rx="8" />
+    <text class="text" x="875" y="70">FastAPI</text>
+    <rect class="knoten" x="810" y="200" width="130" height="60" rx="8" />
+    <text class="text" x="875" y="230">Next.js Dashboard</text>
+
+    <path class="pfeil" d="M140 150 L170 150" marker-end="url(#pfeilspitze)" />
+    <path class="pfeil" d="M310 150 L340 150" marker-end="url(#pfeilspitze)" />
+    <path class="pfeil" d="M460 150 L490 150" marker-end="url(#pfeilspitze)" />
+    <path class="pfeil" d="M610 150 L640 150" marker-end="url(#pfeilspitze)" />
+    <path class="pfeil" d="M780 130 Q820 110 820 100" marker-end="url(#pfeilspitze)" />
+    <path class="pfeil" d="M780 170 Q820 200 820 220" marker-end="url(#pfeilspitze)" />
+    <path class="pfeil" d="M875 100 L875 200" marker-end="url(#pfeilspitze)" />
+
+    <text class="text" x="475" y="305">Apache Airflow orchestriert Ingestion, Silver-Transformation und dbt-Lauf.</text>
+  </g>
+  <defs>
+    <marker id="pfeilspitze" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#000000" />
+    </marker>
+  </defs>
+</svg>

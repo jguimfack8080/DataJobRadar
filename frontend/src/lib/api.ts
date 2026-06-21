@@ -71,6 +71,7 @@ export interface Job {
   veroeffentlicht_am: string | null;
   kategorie: string | null;
   skills: string[];
+  angebots_url: string | null;
 }
 
 export interface JobsSeite {

@@ -50,6 +50,7 @@ class JobsService:
                 veroeffentlicht_am=zeile.get("veroeffentlicht_am"),
                 kategorie=zeile.get("kategorie"),
                 skills=list(zeile.get("skills") or []),
+                angebots_url=zeile.get("angebots_url"),
             )
             for zeile in zeilen
         ]

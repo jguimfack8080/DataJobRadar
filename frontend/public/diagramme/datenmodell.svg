@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" font-family="Inter, system-ui, sans-serif" font-size="13">
+  <style>
+    .tabelle { fill: #ffffff; stroke: #000000; stroke-width: 1.5; }
+    .titel { font-weight: 700; font-size: 14px; }
+    .sub { font-size: 11px; fill: #555555; font-style: italic; }
+    .text { fill: #000000; }
+    .mitte { text-anchor: middle; dominant-baseline: middle; }
+    .links { text-anchor: start; dominant-baseline: middle; }
+    .pfeil { stroke: #000000; stroke-width: 1.5; fill: none; }
+    .key { font-weight: 700; }
+  </style>
+  <rect width="100%" height="100%" fill="#ffffff" />
+
+  <text x="600" y="40" class="text mitte titel" font-size="20">Sternschema der Gold-Schicht</text>
+  <text x="600" y="64" class="text mitte sub">Eine Faktentabelle pro Anzeige, vier Dimensionen plus eine Skill-Faktentabelle</text>
+
+  <rect x="450" y="270" width="300" height="280" rx="10" class="tabelle" />
+  <rect x="450" y="270" width="300" height="40" rx="10" class="tabelle" />
+  <text x="600" y="290" class="text mitte titel">fact_jobs</text>
+  <text x="468" y="332" class="text links key">PK adzuna_id</text>
+  <text x="468" y="352" class="text links key">FK unternehmens_id</text>
+  <text x="468" y="372" class="text links key">FK standort_id</text>
+  <text x="468" y="395" class="text links">titel, kategorie</text>
+  <text x="468" y="415" class="text links">gehalt_min/max/mittel</text>
+  <text x="468" y="435" class="text links">waehrung, vertragstyp</text>
+  <text x="468" y="455" class="text links">vertragszeit</text>
+  <text x="468" y="475" class="text links">veroeffentlicht_am</text>
+  <text x="468" y="495" class="text links">skills (Liste)</text>
+  <text x="468" y="515" class="text links">angebots_url</text>
+
+  <rect x="60" y="150" width="280" height="160" rx="10" class="tabelle" />
+  <rect x="60" y="150" width="280" height="40" rx="10" class="tabelle" />
+  <text x="200" y="170" class="text mitte titel">dim_company</text>
+  <text x="78" y="212" class="text links key">PK unternehmens_id</text>
+  <text x="78" y="232" class="text links">unternehmen</text>
+  <text x="78" y="252" class="text links">unternehmen_normalisiert</text>
+
+  <rect x="60" y="430" width="280" height="180" rx="10" class="tabelle" />
+  <rect x="60" y="430" width="280" height="40" rx="10" class="tabelle" />
+  <text x="200" y="450" class="text mitte titel">dim_location</text>
+  <text x="78" y="492" class="text links key">PK standort_id</text>
+  <text x="78" y="512" class="text links">stadt</text>
+  <text x="78" y="532" class="text links">bundesland</text>
+  <text x="78" y="552" class="text links">region</text>
+
+  <rect x="860" y="150" width="280" height="200" rx="10" class="tabelle" />
+  <rect x="860" y="150" width="280" height="40" rx="10" class="tabelle" />
+  <text x="1000" y="170" class="text mitte titel">dim_date</text>
+  <text x="878" y="212" class="text links key">PK datum</text>
+  <text x="878" y="232" class="text links">jahr, quartal, monat</text>
+  <text x="878" y="252" class="text links">kalenderwoche</text>
+  <text x="878" y="272" class="text links">wochentag_nr</text>
+  <text x="878" y="292" class="text links">wochentag</text>
+
+  <rect x="860" y="430" width="280" height="180" rx="10" class="tabelle" />
+  <rect x="860" y="430" width="280" height="40" rx="10" class="tabelle" />
+  <text x="1000" y="450" class="text mitte titel">fact_skills</text>
+  <text x="878" y="492" class="text links key">FK adzuna_id</text>
+  <text x="878" y="512" class="text links">skill (kanonisch)</text>
+  <text x="878" y="532" class="text links">gewichtung</text>
+
+  <path class="pfeil" d="M 340 250 L 450 340" marker-end="url(#pfk)" />
+  <text x="380" y="270" class="text links sub">N:1</text>
+  <path class="pfeil" d="M 340 520 L 450 420" marker-end="url(#pfk)" />
+  <text x="380" y="500" class="text links sub">N:1</text>
+  <path class="pfeil" d="M 750 340 L 860 250" marker-end="url(#pfk)" />
+  <text x="800" y="280" class="text links sub">N:1 (Datum)</text>
+  <path class="pfeil" d="M 750 420 L 860 510" marker-end="url(#pfk)" />
+  <text x="800" y="490" class="text links sub">1:N</text>
+
+  <text x="600" y="660" class="text mitte sub">Standard-Dimensionsmodellierung: schmale Dimensionen, breite Faktentabelle.</text>
+
+  <defs>
+    <marker id="pfk" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#000000" />
+    </marker>
+  </defs>
+</svg>

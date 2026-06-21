@@ -153,6 +153,7 @@ class SilverTransformator:
             kategorie_bezeichnung AS kategorie,
             veroeffentlicht_am,
             abruf_zeitpunkt,
-            skills_extrahieren(beschreibung) AS skills
+            skills_extrahieren(beschreibung) AS skills,
+            angebots_url
         FROM dedup
         """

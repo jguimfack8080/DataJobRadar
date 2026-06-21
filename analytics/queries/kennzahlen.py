@@ -274,4 +274,8 @@ def _keyset_parsen(wert: str) -> tuple[str, str]:
     parts = wert.split("|", 1)
     if len(parts) != 2:
         raise ValueError("Keyset muss im Format <iso8601>|<id> uebergeben werden")
-    return parts[0], parts[1]
+    # Bei Uebertragung via URL wird '+' (im Zeitzonen-Offset) zu Leerzeichen,
+    # weil application/x-www-form-urlencoded das so vorsieht. Wir setzen das
+    # zurueck, damit DuckDB den ISO-8601-Zeitstempel korrekt parsen kann.
+    zeitstempel = parts[0].replace(" ", "+")
+    return zeitstempel, parts[1]

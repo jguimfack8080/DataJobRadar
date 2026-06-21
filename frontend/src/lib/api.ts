@@ -7,11 +7,22 @@ export class ApiFehler extends Error {
   }
 }
 
-export async function holen<T>(pfad: string, parameter?: Record<string, string | number | undefined>): Promise<T> {
-  const url = new URL(`${basis}${pfad}`, typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
+type Wert = string | number | boolean | undefined | null;
+
+export async function holen<T>(pfad: string, parameter?: Record<string, Wert | Wert[]>): Promise<T> {
+  const url = new URL(
+    `${basis}${pfad}`,
+    typeof window === 'undefined' ? 'http://localhost' : window.location.origin
+  );
   if (parameter) {
     for (const [name, wert] of Object.entries(parameter)) {
-      if (wert !== undefined && wert !== null && wert !== '') {
+      if (wert === undefined || wert === null || wert === '') continue;
+      if (Array.isArray(wert)) {
+        for (const teil of wert) {
+          if (teil === undefined || teil === null || teil === '') continue;
+          url.searchParams.append(name, String(teil));
+        }
+      } else {
         url.searchParams.set(name, String(wert));
       }
     }
@@ -38,7 +49,9 @@ export async function holen<T>(pfad: string, parameter?: Record<string, string |
 
 export const endpunkte = {
   kennzahlen: () => holen<KennzahlenGesamt>('/stats'),
-  jobs: (filter: JobsFilter) => holen<JobsSeite>('/jobs', filter as Record<string, string | number | undefined>),
+  jobs: (filter: JobsFilter) =>
+    holen<JobsSeite>('/jobs', filter as unknown as Record<string, Wert | Wert[]>),
+  facetten: () => holen<FilterFacetten>('/jobs/facetten'),
   topSkills: (limit = 12) => holen<SkillKennzahl[]>('/skills', { limit }),
   topUnternehmen: (limit = 10) => holen<UnternehmensKennzahl[]>('/companies', { limit }),
   topStaedte: (limit = 10) => holen<StadtKennzahl[]>('/cities', { limit }),
@@ -82,10 +95,29 @@ export interface JobsSeite {
 export interface JobsFilter {
   suche?: string;
   stadt?: string;
+  bundesland?: string;
   unternehmen?: string;
-  skill?: string;
+  kategorie?: string;
+  vertragstyp?: string;
+  vertragszeit?: string;
+  waehrung?: string;
+  gehalt_min?: number;
+  gehalt_max?: number;
+  nur_mit_gehalt?: boolean;
+  veroeffentlicht_seit?: string;
+  veroeffentlicht_bis?: string;
+  skill?: string[];
   nach?: string;
   limit?: number;
+}
+
+export interface FilterFacetten {
+  kategorien: string[];
+  vertragstypen: string[];
+  vertragszeiten: string[];
+  bundeslaender: string[];
+  staedte: string[];
+  skills: string[];
 }
 
 export interface SkillKennzahl {

@@ -2,171 +2,195 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const metadata = {
   title: 'Wiki - Data Job Radar Deutschland',
-  description: 'Hintergrund, Architektur und Technik-Stack des Projekts.',
+  description: 'Was ist diese Seite, wie nutzen Sie sie, und was bedeuten die Zahlen.',
 };
 
 export default function WikiSeite() {
   return (
     <article className="mx-auto flex max-w-4xl flex-col gap-8">
-      <header className="space-y-2">
+      <header className="space-y-3">
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          Projektwiki
+          Wiki und Anleitung
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">
           Data Job Radar Deutschland
         </h1>
         <p className="text-base text-muted-foreground">
-          Eine vollstaendige Data-Engineering-Plattform fuer den deutschen IT-Arbeitsmarkt.
-          Von der Adzuna-API-Ingestion ueber ein Bronze-Silver-Gold Data Lake bis zum
-          Dashboard, das Sie gerade sehen.
+          Ein Live-Marktradar fuer IT- und Data-Stellen in Deutschland. Sie sehen taeglich
+          aktualisierte Statistiken zum Stellenmarkt: wer einstellt, was bezahlt wird,
+          welche Skills gefragt sind und wo die Stellen verteilt sind.
         </p>
       </header>
 
-      <KapitelKarte titel="Worum es geht">
+      <KapitelKarte titel="Was ist das hier in einem Satz?">
         <p>
-          Das Projekt sammelt taeglich Stellenanzeigen aus dem deutschen IT-Markt,
-          bereinigt und modelliert sie und macht die Ergebnisse als Statistiken,
-          Skill-Trends und Gehaltsverteilungen sichtbar. Es ist als Portfolio-Projekt
-          fuer Data-Engineering-Bewerbungen entstanden und folgt durchgaengig produktiven
-          Mustern.
+          Diese Seite sammelt jeden Tag automatisch alle relevanten IT- und Data-Stellenanzeigen
+          aus Deutschland und zeigt Ihnen die Trends, Top-Arbeitgeber, gefragtesten Skills und
+          marktueblichen Gehaelter auf einen Blick.
         </p>
       </KapitelKarte>
 
-      <KapitelKarte titel="Systemarchitektur (Diagramm)">
-        <Diagramm
-          quelle="/diagramme/architektur.svg"
-          alt="Schwarz-weisse Systemarchitektur mit Ingestion, Bronze-Silver-Gold, dbt, DuckDB, FastAPI und Dashboard"
-          beschriftung="Schichten und Verantwortlichkeiten im Ueberblick"
-        />
-      </KapitelKarte>
-
-      <KapitelKarte titel="Architektur in Worten">
-        <ul className="space-y-1.5 text-sm">
-          <li><span className="font-medium text-foreground">Ingestion:</span> Adzuna-API mit httpx und tenacity, idempotent, schema-validiert, mit Quarantaene fuer ungueltige Datensaetze.</li>
-          <li><span className="font-medium text-foreground">Bronze:</span> Roh-Parquet partitioniert nach Datum und Kategorie, Zstd-komprimiert.</li>
-          <li><span className="font-medium text-foreground">Silver:</span> Bereinigung, Deduplizierung anhand der Adzuna-ID und Skill-Extraktion ueber eine konfigurierbare Taxonomie.</li>
-          <li><span className="font-medium text-foreground">Gold:</span> Sternschema (fact_jobs, fact_skills, dim_company, dim_location, dim_date) materialisiert von dbt Core.</li>
-          <li><span className="font-medium text-foreground">Warehouse:</span> DuckDB als prozessinternes OLAP-Werkzeug ohne separaten Datenbankserver.</li>
-          <li><span className="font-medium text-foreground">API:</span> FastAPI mit Pydantic v2, Keyset-Pagination, konsistentes Fehlerschema, In-Memory-Cache und Rate Limiting.</li>
-          <li><span className="font-medium text-foreground">Dashboard:</span> Next.js mit statischem Export, vom Backend ausgeliefert.</li>
-          <li><span className="font-medium text-foreground">Orchestrierung:</span> Apache Airflow mit LocalExecutor.</li>
+      <KapitelKarte titel="Wofuer koennen Sie es nutzen?">
+        <ul className="list-disc space-y-1.5 pl-5 text-sm">
+          <li><span className="font-medium text-foreground">Jobsuche:</span> Filtern Sie nach Stadt, Skill, Vertragstyp und Gehalt und klicken Sie direkt zur Original-Anzeige.</li>
+          <li><span className="font-medium text-foreground">Marktvergleich:</span> Was zahlen Unternehmen in Berlin gegenueber Muenchen? Wo ist die Nachfrage am hoechsten?</li>
+          <li><span className="font-medium text-foreground">Gehaltscheck:</span> Liegt Ihr Wunschgehalt im Marktrahmen fuer Ihre Kategorie und Region?</li>
+          <li><span className="font-medium text-foreground">Skill-Planung:</span> Welche Technologien tauchen am haeufigsten in Stellenausschreibungen auf?</li>
+          <li><span className="font-medium text-foreground">Recruiting:</span> Welche Konkurrenz gibt es fuer Ihre offenen Stellen, wo finden Sie aehnliche Profile?</li>
         </ul>
       </KapitelKarte>
 
-      <KapitelKarte titel="Medallion-Schichten (Diagramm)">
-        <Diagramm
-          quelle="/diagramme/medallion.svg"
-          alt="Bronze, Silver und Gold als drei nebeneinander stehende Spalten mit jeweiligen Aufgaben"
-          beschriftung="Wie die Daten vom Roh-Zustand bis zur Analyse veredelt werden"
+      <KapitelKarte titel="So nutzen Sie die einzelnen Seiten">
+        <Anleitung
+          titel="Uebersicht"
+          zweck="Schneller Blick auf die wichtigsten Marktzahlen."
+          schritte={[
+            'Die vier Kacheln oben zeigen aktive Anzeigen, Unternehmen, Standorte und das mittlere Gehalt.',
+            'Das Liniendiagramm zeigt, wie viele neue Anzeigen in den letzten 30 Tagen veroeffentlicht wurden.',
+            'Das Balkendiagramm "Top Skills" zeigt die haeufigsten Anforderungen.',
+            'Die beiden unteren Listen zeigen die staerksten Staedte und Unternehmen.',
+          ]}
+        />
+        <Anleitung
+          titel="Stellenanzeigen"
+          zweck="Konkrete Stellen suchen und direkt zur Adzuna-Anzeige springen."
+          schritte={[
+            'Geben Sie oben einen Suchbegriff ein (Titel oder Unternehmen) und klicken Sie "Filter anwenden".',
+            'Mit "Mehr Filter" oeffnen Sie die volle Filtersuite: Bundesland, Kategorie, Vertragstyp, Vertragszeit, Gehaltsspanne, Datumsbereich, Skills.',
+            'Skills sind Mehrfachauswahl mit UND-Verknuepfung: Wer "Python" und "AWS" anklickt, sieht nur Anzeigen mit beiden.',
+            'Klicken Sie eine Trefferzeile an, um die Original-Anzeige bei Adzuna in einem neuen Tab zu oeffnen.',
+            'Unten erscheint "Mehr laden", solange weitere Treffer verfuegbar sind.',
+            'Mit "Zuruecksetzen" loeschen Sie alle Filter auf einen Klick.',
+          ]}
+        />
+        <Anleitung
+          titel="Skills"
+          zweck="Welche Technologien werden am haeufigsten gefordert."
+          schritte={[
+            'Das Balkendiagramm zeigt die Top-30-Skills nach Anzahl der Anzeigen, in denen sie vorkommen.',
+            'Tipp: Skills tauchen oft in Kombination auf; sehen Sie unter Stellenanzeigen, indem Sie mehrere Skills auswaehlen, wie viele Anzeigen gleichzeitig diese fordern.',
+          ]}
+        />
+        <Anleitung
+          titel="Unternehmen"
+          zweck="Wer stellt am meisten ein."
+          schritte={[
+            'Die Tabelle ist nach Anzahl offener Anzeigen sortiert.',
+            'Die Spalte "Mittleres Gehalt" wird nur dann gefuellt, wenn der Arbeitgeber selbst Gehaelter in seinen Anzeigen veroeffentlicht.',
+          ]}
+        />
+        <Anleitung
+          titel="Staedte"
+          zweck="Regionale Verteilung der Nachfrage."
+          schritte={[
+            'Top 20 Staedte nach Anzahl der Anzeigen. Berlin, Muenchen, Hamburg und Koeln sind ueblicherweise vorne.',
+          ]}
+        />
+        <Anleitung
+          titel="Trends"
+          zweck="Wie sich der Markt ueber die Zeit und nach Region entwickelt."
+          schritte={[
+            'Die Zeitreihe zeigt 60 Tage Neuveroeffentlichungen.',
+            'Die Gehaltsverteilung laesst sich nach Kategorie, Stadt oder Bundesland gruppieren. Sie zeigt die 25%-, 50%- und 75%-Quantile.',
+            'Lese-Hilfe: das mittlere 50% der Loehne (vom unteren Ende des Balkens bis zum oberen Ende) ist die typische Spanne fuer diese Gruppe.',
+          ]}
         />
       </KapitelKarte>
 
-      <KapitelKarte titel="Datenfluss (Diagramm)">
+      <KapitelKarte titel="Was bedeuten die Zahlen?">
+        <ul className="space-y-2 text-sm">
+          <li><span className="font-medium text-foreground">Aktive Anzeigen:</span> Aktuell von Adzuna ausgespielte Stellen mit Land Deutschland. Eine Stelle, die mehrfach am Tag erscheint, wird nur einmal gezaehlt.</li>
+          <li><span className="font-medium text-foreground">Gehalt:</span> Wenn die Anzeige eine Spanne hat, nehmen wir den Mittelwert. Steht nur ein Wert in der Anzeige, nutzen wir genau diesen. Ohne Angabe wird die Anzeige nicht in Gehaltsstatistiken einberechnet.</li>
+          <li><span className="font-medium text-foreground">Skills:</span> Werden aus dem Beschreibungstext der Anzeige automatisch erkannt. Nicht jeder Skill, der vorkommt, wird zwingend als zwingende Anforderung verstanden.</li>
+          <li><span className="font-medium text-foreground">Stadt und Bundesland:</span> Stammen aus den Geo-Angaben der Anzeige. Anzeigen ohne klare Ortsangabe landen in "Deutschland / unbekannt".</li>
+        </ul>
+      </KapitelKarte>
+
+      <KapitelKarte titel="Wie aktuell sind die Daten?">
+        <p>
+          Die Pipeline laeuft taeglich automatisch und holt alle neuen Anzeigen. Die juengste
+          Aktualisierung sehen Sie auf der Uebersichtsseite unter "spaeteste Anzeige".
+          Anzeigen, die bei Adzuna nicht mehr verfuegbar sind, bleiben aus historischen Gruenden
+          weiterhin sichtbar, koennen aber nicht mehr beworben werden; deshalb empfehlen wir,
+          den direkten Link zu pruefen.
+        </p>
+      </KapitelKarte>
+
+      <KapitelKarte titel="Datenquelle und Lizenz">
+        <p className="text-sm">
+          Alle Daten stammen ausschliesslich aus der oeffentlichen{' '}
+          <a
+            href="https://developer.adzuna.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-accent underline-offset-4 hover:underline"
+          >
+            Adzuna-API
+          </a>{' '}
+          fuer das Land Deutschland. Jede Stellenanzeige verlinkt direkt auf das Original bei
+          Adzuna. Diese Seite ist kostenfrei nutzbar und gibt die Daten unveraendert wieder.
+        </p>
+      </KapitelKarte>
+
+      <KapitelKarte titel="Grenzen und Hinweise">
+        <ul className="list-disc space-y-1.5 pl-5 text-sm">
+          <li>Manche Anzeigen enthalten kein Gehalt; diese tauchen in den Gehaltsstatistiken nicht auf.</li>
+          <li>Die Skill-Erkennung ist regelbasiert und kann gelegentlich Fehltreffer produzieren (zum Beispiel "R" als Programmiersprache erkennen, obwohl in der Anzeige nur ein Buchstabe gemeint ist).</li>
+          <li>Sehr kleine Orte erscheinen oft als "Deutschland", weil die Original-Anzeige keine genauere Angabe enthaelt.</li>
+          <li>Es werden nur deutschsprachige und international ausgeschriebene Stellen mit Adzuna-Indexierung beruecksichtigt.</li>
+        </ul>
+      </KapitelKarte>
+
+      <KapitelKarte titel="Wie die Daten verarbeitet werden">
         <Diagramm
           quelle="/diagramme/datenfluss.svg"
-          alt="Pfeile von Adzuna ueber Ingestion, Bronze, Silver, Gold zu API und Dashboard"
-          beschriftung="Adzuna bis Dashboard auf einer Linie"
+          alt="Adzuna -> Ingestion -> Bronze -> Silver -> Gold -> API -> Dashboard"
+          beschriftung="Von der Adzuna-API bis zu diesem Dashboard: ein automatischer Lauf pro Tag."
         />
       </KapitelKarte>
 
-      <KapitelKarte titel="Datenfluss in Worten">
-        <ol className="list-decimal space-y-1.5 pl-5 text-sm">
-          <li>Airflow triggert taeglich einen Lauf.</li>
-          <li>Der Adzuna-Client ruft seitenweise Stellenangebote ab, mit exponentiellem Backoff bei Fehlern und Quota-Erkennung.</li>
-          <li>Jeder Treffer wird gegen ein Pydantic-Schema gepruefft. Verletzungen landen in einer Quarantaene-Datei, nicht im stillen Loeschmuelleimer.</li>
-          <li>Bronze speichert die validierten Roh-Daten unveraendert als Parquet.</li>
-          <li>Silver wendet eine DuckDB-Transformation an: Normalisierung, Deduplizierung, Skill-Extraktion ueber eine erweiterbare Taxonomie.</li>
-          <li>dbt Core baut darauf das Sternschema mit Tests fuer Eindeutigkeit, Nicht-Null-Bedingungen, referenzielle Integritaet und erlaubte Werte.</li>
-          <li>Das Backend liest read-only aus DuckDB und liefert die typisierten Antworten an dieses Dashboard.</li>
-        </ol>
-      </KapitelKarte>
-
-      <KapitelKarte titel="Airflow-DAG (Diagramm)">
-        <Diagramm
-          quelle="/diagramme/airflow_dag.svg"
-          alt="Sechs Tasks von ingestion_lauf bis dbt_test mit Pfeilen verbunden"
-          beschriftung="arbeitsmarkt_data_pipeline taeglich um 06:00 UTC"
-        />
-      </KapitelKarte>
-
-      <KapitelKarte titel="Datenmodell als Sternschema (Diagramm)">
-        <Diagramm
-          quelle="/diagramme/datenmodell.svg"
-          alt="Faktentabelle fact_jobs in der Mitte, dim_company, dim_location, dim_date und fact_skills daran"
-          beschriftung="Klassisches dimensionales Modell, materialisiert von dbt"
-        />
-      </KapitelKarte>
-
-      <KapitelKarte titel="Datenmodell in Worten">
-        <ul className="space-y-1.5 text-sm">
-          <li><span className="font-mono text-foreground">fact_jobs</span>: eine Zeile pro Stellenanzeige mit Fremdschluesseln auf Unternehmen und Standort.</li>
-          <li><span className="font-mono text-foreground">fact_skills</span>: eine Zeile pro Skill je Anzeige (Many-to-Many) mit Gewichtung.</li>
-          <li><span className="font-mono text-foreground">dim_company</span>: normalisierte Unternehmen mit Surrogatschluessel.</li>
-          <li><span className="font-mono text-foreground">dim_location</span>: Stadt, Bundesland, Region.</li>
-          <li><span className="font-mono text-foreground">dim_date</span>: klassische Datumsdimension fuer Zeitreihen.</li>
-        </ul>
-      </KapitelKarte>
-
-      <KapitelKarte titel="Deployment-Topologie (Diagramm)">
-        <Diagramm
-          quelle="/diagramme/deployment.svg"
-          alt="Endnutzer, Host-Nginx und der Docker-Stack mit Backend, Airflow, Postgres und Volumes"
-          beschriftung="Einer extern erreichbarer Port, alles andere auf Loopback"
-        />
-      </KapitelKarte>
-
-      <KapitelKarte titel="Eingesetzte Technologien">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <TechBlock kategorie="Sprachen" eintraege={['Python 3.12', 'TypeScript', 'SQL']} />
-          <TechBlock kategorie="Pipeline" eintraege={['Apache Airflow', 'dbt Core', 'DuckDB', 'pyarrow']} />
-          <TechBlock kategorie="Backend" eintraege={['FastAPI', 'Pydantic v2', 'Uvicorn', 'httpx', 'tenacity', 'structlog']} />
-          <TechBlock kategorie="Frontend" eintraege={['Next.js 14 RSC', 'Tailwind CSS', 'Recharts', 'SWR', 'Shadcn-UI-Muster']} />
-          <TechBlock kategorie="Infrastruktur" eintraege={['Docker Compose', 'Nginx Reverse Proxy', 'Postgres (nur Airflow Metadaten)']} />
-          <TechBlock kategorie="Qualitaet" eintraege={['pytest', 'ruff', 'mypy', 'dbt tests']} />
-        </div>
-      </KapitelKarte>
-
-      <KapitelKarte titel="Was das Projekt besonders macht">
-        <ul className="space-y-1.5 text-sm">
-          <li>End-to-End Verantwortung: Ingestion, Storage, Transformation, Warehouse, API, UI und Deployment in einem Repository.</li>
-          <li>Produktive Muster statt Tutorial-Code: idempotente Pipeline, Backoff mit Jitter, Schema-Quarantaene, strukturierte Logs mit Korrelationskennung.</li>
-          <li>Pragmatische Ressourcenoptimierung: DuckDB statt Postgres-Warehouse, LocalExecutor statt Celery, statischer Frontend-Export statt separatem Node-Server.</li>
-          <li>Datenqualitaet als Pflicht: dbt-Tests fuer Eindeutigkeit, referenzielle Integritaet und erlaubte Werte; Quarantaene-Zaehler im Lauf-Bericht.</li>
-          <li>Sicherheitsbewusst: Geheimnisse nur ueber Environment-Variablen, Rate Limiting, CORS-Whitelist, konsistentes Fehlerformat ohne Preisgabe interner Details.</li>
-          <li>Realer deutscher Markt: 3.000+ aktive Anzeigen, 700+ Unternehmen, Gehaltsstatistiken nach Bundesland und Kategorie.</li>
-        </ul>
-      </KapitelKarte>
-
-      <KapitelKarte titel="Bekannte Grenzen und naechste Schritte">
-        <ul className="space-y-1.5 text-sm">
-          <li>Aktuell ausschliesslich Adzuna als Quelle. Weitere Quellen (StepStone, Indeed) liessen sich als zusaetzliche Ingestion-Adapter ergaenzen.</li>
-          <li>Batch-Pipeline, kein Streaming. Eine spaetere Erweiterung um Kafka oder Kinesis ist denkbar, ist aber bei den taeglichen Volumen nicht noetig.</li>
-          <li>Single-Node DuckDB: ausreichend fuer den aktuellen Datenumfang, fuer mehrere Mandanten waere ein dediziertes Warehouse sinnvoller.</li>
-          <li>Skill-Extraktion ueber Regex-Taxonomie: einfach und nachvollziehbar, koennte fuer hoehere Praezision durch ein NER-Modell oder LLM ergaenzt werden.</li>
-        </ul>
-      </KapitelKarte>
-
-      <KapitelKarte titel="Quellcode und Lizenz">
+      <KapitelKarte titel="Technische Architektur (fuer Interessierte)">
         <p className="text-sm">
-          Vollstaendiger Quellcode auf GitHub:{' '}
+          Wer es genauer wissen will: hier die wichtigsten Diagramme der Plattform. Sie sind
+          jeweils einzeln aufklickbar und auch im{' '}
           <a
             href="https://github.com/jguimfack8080/DataJobRadar"
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-accent underline-offset-4 hover:underline"
           >
-            jguimfack8080/DataJobRadar
-          </a>
-          . Das Repository enthaelt eine ausfuehrliche README mit Setup-Anleitung,
-          Architektur-Entscheidungen (ADRs) und mehreren Diagrammen.
+            Repository
+          </a>{' '}
+          verfuegbar.
         </p>
+        <div className="mt-4 space-y-6">
+          <Diagramm
+            quelle="/diagramme/architektur.svg"
+            alt="Systemarchitektur"
+            beschriftung="Systemarchitektur: Schichten und Komponenten"
+          />
+          <Diagramm
+            quelle="/diagramme/medallion.svg"
+            alt="Medallion Architecture"
+            beschriftung="Medallion: Bronze, Silver, Gold - wie die Daten veredelt werden"
+          />
+          <Diagramm
+            quelle="/diagramme/airflow_dag.svg"
+            alt="Airflow DAG"
+            beschriftung="Taeglicher automatischer Ablauf der Datenpipeline"
+          />
+          <Diagramm
+            quelle="/diagramme/datenmodell.svg"
+            alt="Sternschema"
+            beschriftung="Datenmodell: Fakten- und Dimensionstabellen"
+          />
+          <Diagramm
+            quelle="/diagramme/deployment.svg"
+            alt="Deployment-Topologie"
+            beschriftung="Wie die Anwendung in Produktion laeuft"
+          />
+        </div>
       </KapitelKarte>
-
-      <footer className="border-t pt-6 text-xs text-muted-foreground">
-        Datenquelle: Adzuna API (Land: de). Diese Plattform ist ein nicht-kommerzielles
-        Portfolio-Projekt. Jede Stellenanzeige verlinkt direkt auf das Original bei
-        Adzuna.
-      </footer>
     </article>
   );
 }
@@ -184,20 +208,24 @@ function KapitelKarte({ titel, children }: { titel: string; children: React.Reac
   );
 }
 
-function TechBlock({ kategorie, eintraege }: { kategorie: string; eintraege: string[] }) {
+function Anleitung({
+  titel,
+  zweck,
+  schritte,
+}: {
+  titel: string;
+  zweck: string;
+  schritte: string[];
+}) {
   return (
-    <div className="rounded-lg border bg-muted/30 p-3">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{kategorie}</p>
-      <p className="mt-1 flex flex-wrap gap-1.5">
-        {eintraege.map((eintrag) => (
-          <span
-            key={eintrag}
-            className="rounded-full border bg-card px-2 py-0.5 text-xs text-foreground"
-          >
-            {eintrag}
-          </span>
+    <div className="mb-5 rounded-lg border bg-muted/30 p-4">
+      <p className="text-sm font-semibold text-foreground">{titel}</p>
+      <p className="mt-1 text-xs italic text-muted-foreground">Zweck: {zweck}</p>
+      <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm">
+        {schritte.map((eintrag, index) => (
+          <li key={`${titel}-${index}`}>{eintrag}</li>
         ))}
-      </p>
+      </ol>
     </div>
   );
 }

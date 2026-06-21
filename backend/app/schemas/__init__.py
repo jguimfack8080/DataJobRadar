@@ -1,4 +1,5 @@
 from backend.app.schemas.antworten import (
+    FilterFacetten,
     Job,
     JobsSeite,
     KennzahlenGesamt,
@@ -10,6 +11,7 @@ from backend.app.schemas.antworten import (
 )
 
 __all__ = [
+    "FilterFacetten",
     "Job",
     "JobsSeite",
     "KennzahlenGesamt",

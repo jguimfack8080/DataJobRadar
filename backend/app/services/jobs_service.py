@@ -1,10 +1,14 @@
 """Service-Schicht fuer Stellenanzeigen."""
 from __future__ import annotations
 
-from typing import Optional
+from typing import List, Optional
 
 from analytics.engine.duckdb_engine import DuckDBEngine
-from analytics.queries.kennzahlen import JobsFilter, abfrage_jobs_seite
+from analytics.queries.kennzahlen import (
+    JobsFilter,
+    abfrage_filter_facetten,
+    abfrage_jobs_seite,
+)
 
 from backend.app.schemas.antworten import Job, JobsSeite
 
@@ -18,8 +22,18 @@ class JobsService:
         *,
         suche: Optional[str] = None,
         stadt: Optional[str] = None,
+        bundesland: Optional[str] = None,
         unternehmen: Optional[str] = None,
-        skill: Optional[str] = None,
+        kategorie: Optional[str] = None,
+        vertragstyp: Optional[str] = None,
+        vertragszeit: Optional[str] = None,
+        waehrung: Optional[str] = None,
+        gehalt_min: Optional[float] = None,
+        gehalt_max: Optional[float] = None,
+        nur_mit_gehalt: bool = False,
+        veroeffentlicht_seit: Optional[str] = None,
+        veroeffentlicht_bis: Optional[str] = None,
+        skills: Optional[List[str]] = None,
         nach_keyset: Optional[str] = None,
         limit: int = 25,
     ) -> JobsSeite:
@@ -28,8 +42,18 @@ class JobsService:
             JobsFilter(
                 suche=suche,
                 stadt=stadt,
+                bundesland=bundesland,
                 unternehmen=unternehmen,
-                skill=skill,
+                kategorie=kategorie,
+                vertragstyp=vertragstyp,
+                vertragszeit=vertragszeit,
+                waehrung=waehrung,
+                gehalt_min=gehalt_min,
+                gehalt_max=gehalt_max,
+                nur_mit_gehalt=nur_mit_gehalt,
+                veroeffentlicht_seit=veroeffentlicht_seit,
+                veroeffentlicht_bis=veroeffentlicht_bis,
+                skills=skills or [],
                 nach_keyset=nach_keyset,
                 limit=limit,
             ),
@@ -60,3 +84,6 @@ class JobsService:
             if letzter.veroeffentlicht_am:
                 naechstes_keyset = f"{letzter.veroeffentlicht_am.isoformat()}|{letzter.kennung}"
         return JobsSeite(treffer=jobs, naechstes_keyset=naechstes_keyset)
+
+    def facetten(self) -> dict[str, list[str]]:
+        return abfrage_filter_facetten(self._engine)

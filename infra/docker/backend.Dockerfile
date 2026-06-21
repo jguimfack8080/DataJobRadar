@@ -18,15 +18,8 @@ RUN apt-get update \
 
 FROM python-base AS deps
 WORKDIR /install
-COPY shared/python/djr_core/ /install/djr_core/
-COPY ingestion/ /install/ingestion/
-COPY data_lake/ /install/data_lake/
-COPY skills/ /install/skills/
-COPY analytics/ /install/analytics/
-COPY backend/ /install/backend/
 COPY infra/docker/requirements-backend.txt /install/requirements.txt
-RUN pip install -r requirements.txt \
- && pip install /install/djr_core
+RUN pip install -r requirements.txt
 
 FROM python-base AS runtime
 WORKDIR /app

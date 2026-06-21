@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardKennzahl, CardTitle } from '@/components/ui/card';
 import { FehlerAnzeige } from '@/components/ui/fehler-anzeige';
 import { LeererZustand } from '@/components/ui/leerer-zustand';
@@ -16,6 +17,11 @@ import type {
   ZeitreihePunkt,
 } from '@/lib/api';
 
+const anzeigenLink = (filter: Record<string, string>) => {
+  const params = new URLSearchParams(filter).toString();
+  return `/anzeigen/?${params}`;
+};
+
 export default function UebersichtSeite() {
   const kennzahlen = useApi<KennzahlenGesamt>('/stats');
   const skills = useApi<SkillKennzahl[]>('/skills?limit=12');
@@ -28,31 +34,36 @@ export default function UebersichtSeite() {
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Uebersicht</h1>
         <p className="text-sm text-muted-foreground">
-          Ein konsolidierter Blick auf den aktuellen deutschen Data-Engineering-Markt.
+          Klicken Sie eine Kachel, einen Balken oder einen Listeneintrag an, um direkt zu den
+          passenden Stellenanzeigen zu springen.
         </p>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KennzahlenKachel
           titel="Aktive Anzeigen"
+          ziel="/anzeigen/"
           ladend={kennzahlen.isLoading}
           fehler={kennzahlen.error}
           wert={formatZahl(kennzahlen.data?.anzahl_jobs ?? 0)}
         />
         <KennzahlenKachel
           titel="Unternehmen"
+          ziel="/unternehmen/"
           ladend={kennzahlen.isLoading}
           fehler={kennzahlen.error}
           wert={formatZahl(kennzahlen.data?.anzahl_unternehmen ?? 0)}
         />
         <KennzahlenKachel
           titel="Standorte"
+          ziel="/staedte/"
           ladend={kennzahlen.isLoading}
           fehler={kennzahlen.error}
           wert={formatZahl(kennzahlen.data?.anzahl_standorte ?? 0)}
         />
         <KennzahlenKachel
           titel="Mittleres Gehalt"
+          ziel={anzeigenLink({ nur_mit_gehalt: 'true' })}
           ladend={kennzahlen.isLoading}
           fehler={kennzahlen.error}
           wert={formatGehalt(kennzahlen.data?.gehalt_mittel ?? null)}
@@ -78,7 +89,7 @@ export default function UebersichtSeite() {
         <Card>
           <CardHeader>
             <CardTitle>Top Skills</CardTitle>
-            <p className="text-xs text-muted-foreground">Haeufigste technische Anforderungen.</p>
+            <p className="text-xs text-muted-foreground">Klicken Sie einen Balken an.</p>
           </CardHeader>
           <CardContent>
             <DiagrammRahmen
@@ -90,6 +101,7 @@ export default function UebersichtSeite() {
                 daten={(skills.data ?? []).map((eintrag) => ({
                   beschriftung: eintrag.skill,
                   wert: eintrag.anzahl_jobs,
+                  ziel: anzeigenLink({ skill: eintrag.skill }),
                 }))}
                 hoehe={320}
               />
@@ -102,6 +114,7 @@ export default function UebersichtSeite() {
         <Card>
           <CardHeader>
             <CardTitle>Top Staedte</CardTitle>
+            <p className="text-xs text-muted-foreground">Eine Stadt anklicken, um die Anzeigen zu sehen.</p>
           </CardHeader>
           <CardContent>
             <Liste
@@ -111,14 +124,23 @@ export default function UebersichtSeite() {
             >
               <ul className="divide-y">
                 {(staedte.data ?? []).map((eintrag) => (
-                  <li key={`${eintrag.stadt}-${eintrag.bundesland}`} className="flex items-center justify-between py-2 text-sm">
-                    <span>
-                      {eintrag.stadt}
-                      {eintrag.bundesland ? (
-                        <span className="ml-2 text-xs text-muted-foreground">{eintrag.bundesland}</span>
-                      ) : null}
-                    </span>
-                    <span className="kennzahl font-medium">{formatZahl(eintrag.anzahl_jobs)}</span>
+                  <li key={`${eintrag.stadt}-${eintrag.bundesland}`}>
+                    <Link
+                      href={anzeigenLink({ stadt: eintrag.stadt })}
+                      className="-mx-2 flex items-center justify-between rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted/60 focus:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span>
+                        {eintrag.stadt}
+                        {eintrag.bundesland ? (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {eintrag.bundesland}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="kennzahl font-medium">
+                        {formatZahl(eintrag.anzahl_jobs)}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -128,6 +150,7 @@ export default function UebersichtSeite() {
         <Card>
           <CardHeader>
             <CardTitle>Top Unternehmen</CardTitle>
+            <p className="text-xs text-muted-foreground">Ein Unternehmen anklicken, um dessen Anzeigen zu sehen.</p>
           </CardHeader>
           <CardContent>
             <Liste
@@ -137,9 +160,16 @@ export default function UebersichtSeite() {
             >
               <ul className="divide-y">
                 {(unternehmen.data ?? []).map((eintrag) => (
-                  <li key={eintrag.unternehmen} className="flex items-center justify-between py-2 text-sm">
-                    <span>{eintrag.unternehmen}</span>
-                    <span className="kennzahl font-medium">{formatZahl(eintrag.anzahl_jobs)}</span>
+                  <li key={eintrag.unternehmen}>
+                    <Link
+                      href={anzeigenLink({ unternehmen: eintrag.unternehmen })}
+                      className="-mx-2 flex items-center justify-between rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted/60 focus:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span>{eintrag.unternehmen}</span>
+                      <span className="kennzahl font-medium">
+                        {formatZahl(eintrag.anzahl_jobs)}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -151,20 +181,35 @@ export default function UebersichtSeite() {
   );
 }
 
-function KennzahlenKachel({ titel, wert, ladend, fehler }: { titel: string; wert: string; ladend: boolean; fehler: unknown }) {
+function KennzahlenKachel({
+  titel,
+  wert,
+  ziel,
+  ladend,
+  fehler,
+}: {
+  titel: string;
+  wert: string;
+  ziel: string;
+  ladend: boolean;
+  fehler: unknown;
+}) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{titel}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {ladend ? <Skeleton className="h-9 w-32" /> : null}
-        {!ladend && fehler ? (
-          <p className="text-xs text-destructive">Fehler beim Laden</p>
-        ) : null}
-        {!ladend && !fehler ? <CardKennzahl>{wert}</CardKennzahl> : null}
-      </CardContent>
-    </Card>
+    <Link
+      href={ziel}
+      className="block rounded-lg transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>{titel}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {ladend ? <Skeleton className="h-9 w-32" /> : null}
+          {!ladend && fehler ? <p className="text-xs text-destructive">Fehler beim Laden</p> : null}
+          {!ladend && !fehler ? <CardKennzahl>{wert}</CardKennzahl> : null}
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 

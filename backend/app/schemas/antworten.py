@@ -76,3 +76,12 @@ class GehaltsverteilungEintrag(BaseModel):
     gehalt_median: Optional[float] = None
     gehalt_p75: Optional[float] = None
     gehalt_mittel: Optional[float] = None
+
+
+class FilterFacetten(BaseModel):
+    kategorien: List[str] = Field(default_factory=list)
+    vertragstypen: List[str] = Field(default_factory=list)
+    vertragszeiten: List[str] = Field(default_factory=list)
+    bundeslaender: List[str] = Field(default_factory=list)
+    staedte: List[str] = Field(default_factory=list)
+    skills: List[str] = Field(default_factory=list)

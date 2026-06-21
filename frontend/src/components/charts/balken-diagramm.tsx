@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
   Bar,
   BarChart,
@@ -14,6 +15,7 @@ import { formatZahl } from '@/lib/utils';
 interface Datenpunkt {
   beschriftung: string;
   wert: number;
+  ziel?: string;
 }
 
 interface Props {
@@ -23,6 +25,10 @@ interface Props {
 }
 
 export function BalkenDiagramm({ daten, hoehe = 320, beschriftungYAchse }: Props) {
+  const router = useRouter();
+  const klick = (eintrag: Datenpunkt | undefined) => {
+    if (eintrag?.ziel) router.push(eintrag.ziel);
+  };
   return (
     <ResponsiveContainer width="100%" height={hoehe}>
       <BarChart data={daten} margin={{ top: 12, right: 8, left: 0, bottom: 8 }}>
@@ -41,7 +47,12 @@ export function BalkenDiagramm({ daten, hoehe = 320, beschriftungYAchse }: Props
           tickFormatter={(wert) => formatZahl(wert)}
           label={
             beschriftungYAchse
-              ? { value: beschriftungYAchse, angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }
+              ? {
+                  value: beschriftungYAchse,
+                  angle: -90,
+                  position: 'insideLeft',
+                  fill: 'hsl(var(--muted-foreground))',
+                }
               : undefined
           }
         />
@@ -62,6 +73,8 @@ export function BalkenDiagramm({ daten, hoehe = 320, beschriftungYAchse }: Props
           radius={[6, 6, 0, 0]}
           animationDuration={400}
           animationEasing="ease-out"
+          cursor={daten.some((p) => p.ziel) ? 'pointer' : 'default'}
+          onClick={(payload) => klick(payload as unknown as Datenpunkt)}
         />
       </BarChart>
     </ResponsiveContainer>

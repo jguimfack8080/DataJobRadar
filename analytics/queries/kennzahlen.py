@@ -1,7 +1,7 @@
 """Parametrisierte SQL-Abfragen fuer die Gold-Schicht."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, List, Optional
 
 from analytics.engine.duckdb_engine import DuckDBEngine
@@ -15,10 +15,22 @@ _FAKT_SKILLS = "gold.fact_skills"
 
 @dataclass
 class JobsFilter:
+    """Vollstaendige Filterspezifikation fuer die Jobs-Abfrage."""
+
     suche: Optional[str] = None
     stadt: Optional[str] = None
+    bundesland: Optional[str] = None
     unternehmen: Optional[str] = None
-    skill: Optional[str] = None
+    kategorie: Optional[str] = None
+    vertragstyp: Optional[str] = None
+    vertragszeit: Optional[str] = None
+    waehrung: Optional[str] = None
+    gehalt_min: Optional[float] = None
+    gehalt_max: Optional[float] = None
+    nur_mit_gehalt: bool = False
+    veroeffentlicht_seit: Optional[str] = None
+    veroeffentlicht_bis: Optional[str] = None
+    skills: List[str] = field(default_factory=list)
     nach_keyset: Optional[str] = None
     limit: int = 25
 
@@ -29,7 +41,7 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
 
     if filter.suche:
         bedingungen.append(
-            "(LOWER(f.titel) LIKE ? OR LOWER(d.unternehmen_normalisiert) LIKE ?)"
+            "(LOWER(f.titel) LIKE ? OR LOWER(COALESCE(d.unternehmen_normalisiert,'')) LIKE ?)"
         )
         muster = f"%{filter.suche.lower()}%"
         parameter.extend([muster, muster])
@@ -38,18 +50,60 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
         bedingungen.append("LOWER(s.stadt) = ?")
         parameter.append(filter.stadt.lower())
 
+    if filter.bundesland:
+        bedingungen.append("LOWER(s.bundesland) = ?")
+        parameter.append(filter.bundesland.lower())
+
     if filter.unternehmen:
         bedingungen.append("LOWER(d.unternehmen_normalisiert) = ?")
         parameter.append(filter.unternehmen.lower())
 
-    if filter.skill:
-        bedingungen.append(
-            f"EXISTS (SELECT 1 FROM {_FAKT_SKILLS} fs WHERE fs.adzuna_id = f.adzuna_id AND fs.skill = ?)"
-        )
-        parameter.append(filter.skill)
+    if filter.kategorie:
+        bedingungen.append("LOWER(f.kategorie) = ?")
+        parameter.append(filter.kategorie.lower())
+
+    if filter.vertragstyp:
+        bedingungen.append("LOWER(f.vertragstyp) = ?")
+        parameter.append(filter.vertragstyp.lower())
+
+    if filter.vertragszeit:
+        bedingungen.append("LOWER(f.vertragszeit) = ?")
+        parameter.append(filter.vertragszeit.lower())
+
+    if filter.waehrung:
+        bedingungen.append("UPPER(f.waehrung) = ?")
+        parameter.append(filter.waehrung.upper())
+
+    if filter.gehalt_min is not None:
+        bedingungen.append("COALESCE(f.gehalt_mittel, f.gehalt_max) >= ?")
+        parameter.append(float(filter.gehalt_min))
+
+    if filter.gehalt_max is not None:
+        bedingungen.append("COALESCE(f.gehalt_mittel, f.gehalt_min) <= ?")
+        parameter.append(float(filter.gehalt_max))
+
+    if filter.nur_mit_gehalt:
+        bedingungen.append("f.gehalt_mittel IS NOT NULL")
+
+    if filter.veroeffentlicht_seit:
+        bedingungen.append("f.veroeffentlicht_am >= CAST(? AS TIMESTAMP)")
+        parameter.append(filter.veroeffentlicht_seit)
+
+    if filter.veroeffentlicht_bis:
+        bedingungen.append("f.veroeffentlicht_am <= CAST(? AS TIMESTAMP)")
+        parameter.append(filter.veroeffentlicht_bis)
+
+    if filter.skills:
+        for skill in filter.skills:
+            bedingungen.append(
+                f"EXISTS (SELECT 1 FROM {_FAKT_SKILLS} fs WHERE fs.adzuna_id = f.adzuna_id AND fs.skill = ?)"
+            )
+            parameter.append(skill)
 
     if filter.nach_keyset:
-        bedingungen.append("(f.veroeffentlicht_am, f.adzuna_id) < (?, ?)")
+        bedingungen.append(
+            "(f.veroeffentlicht_am, f.adzuna_id) < (CAST(? AS TIMESTAMP), CAST(? AS VARCHAR))"
+        )
         zeitstempel, kennung = _keyset_parsen(filter.nach_keyset)
         parameter.extend([zeitstempel, kennung])
 
@@ -80,6 +134,43 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
     """
     parameter.append(min(max(filter.limit, 1), 200))
     return engine.abfragen(sql, parameter)
+
+
+def abfrage_filter_facetten(engine: DuckDBEngine) -> dict[str, list[str]]:
+    """Liefert die verfuegbaren Filterwerte (Facetten) fuer das Frontend."""
+    sql_kategorien = f"SELECT DISTINCT kategorie FROM {_FAKT} WHERE kategorie IS NOT NULL ORDER BY kategorie"
+    sql_vertragstyp = (
+        f"SELECT DISTINCT vertragstyp FROM {_FAKT} "
+        "WHERE vertragstyp IS NOT NULL AND vertragstyp <> '' ORDER BY vertragstyp"
+    )
+    sql_vertragszeit = (
+        f"SELECT DISTINCT vertragszeit FROM {_FAKT} "
+        "WHERE vertragszeit IS NOT NULL AND vertragszeit <> '' ORDER BY vertragszeit"
+    )
+    sql_bundeslaender = (
+        f"SELECT DISTINCT s.bundesland FROM {_DIM_STANDORT} s "
+        "WHERE s.bundesland IS NOT NULL AND s.bundesland <> '' AND s.bundesland <> 'unbekannt' "
+        "ORDER BY s.bundesland"
+    )
+    sql_staedte = (
+        f"SELECT s.stadt, COUNT(*)::BIGINT AS n FROM {_FAKT} f "
+        f"JOIN {_DIM_STANDORT} s ON s.standort_id = f.standort_id "
+        "WHERE s.stadt IS NOT NULL AND s.stadt <> '' AND s.stadt <> 'unbekannt' "
+        "GROUP BY s.stadt ORDER BY n DESC LIMIT 50"
+    )
+    sql_skills = (
+        f"SELECT skill, COUNT(*)::BIGINT AS n FROM {_FAKT_SKILLS} "
+        "GROUP BY skill ORDER BY n DESC LIMIT 50"
+    )
+
+    return {
+        "kategorien": [str(zeile["kategorie"]) for zeile in engine.abfragen(sql_kategorien)],
+        "vertragstypen": [str(z["vertragstyp"]) for z in engine.abfragen(sql_vertragstyp)],
+        "vertragszeiten": [str(z["vertragszeit"]) for z in engine.abfragen(sql_vertragszeit)],
+        "bundeslaender": [str(z["bundesland"]) for z in engine.abfragen(sql_bundeslaender)],
+        "staedte": [str(z["stadt"]) for z in engine.abfragen(sql_staedte)],
+        "skills": [str(z["skill"]) for z in engine.abfragen(sql_skills)],
+    }
 
 
 def abfrage_kennzahlen_gesamt(engine: DuckDBEngine) -> dict[str, Any]:

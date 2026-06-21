@@ -15,7 +15,9 @@ export default function StaedteSeite() {
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Staedte</h1>
-        <p className="text-sm text-muted-foreground">Regionale Verteilung der aktuellen Anzeigen.</p>
+        <p className="text-sm text-muted-foreground">
+          Regionale Verteilung. Balken anklicken um die Anzeigen der Stadt zu sehen.
+        </p>
       </header>
       <Card>
         <CardHeader>
@@ -33,6 +35,7 @@ export default function StaedteSeite() {
                 daten={staedte.data.map((eintrag) => ({
                   beschriftung: eintrag.stadt,
                   wert: eintrag.anzahl_jobs,
+                  ziel: `/anzeigen/?stadt=${encodeURIComponent(eintrag.stadt)}`,
                 }))}
                 hoehe={384}
               />

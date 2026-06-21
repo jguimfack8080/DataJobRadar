@@ -15,7 +15,10 @@ export default function SkillsSeite() {
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Skills</h1>
-        <p className="text-sm text-muted-foreground">Gefragteste technische Faehigkeiten im Markt.</p>
+        <p className="text-sm text-muted-foreground">
+          Gefragteste technische Faehigkeiten. Klicken Sie einen Balken an, um die zugehoerigen
+          Anzeigen zu sehen.
+        </p>
       </header>
       <Card>
         <CardHeader>
@@ -33,6 +36,7 @@ export default function SkillsSeite() {
                 daten={skills.data.map((eintrag) => ({
                   beschriftung: eintrag.skill,
                   wert: eintrag.anzahl_jobs,
+                  ziel: `/anzeigen/?skill=${encodeURIComponent(eintrag.skill)}`,
                 }))}
                 hoehe={384}
                 beschriftungYAchse="Anzeigen"

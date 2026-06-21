@@ -21,9 +21,10 @@ interface Datenpunkt {
 interface Props {
   daten: Datenpunkt[];
   hoehe?: number;
+  onGruppeKlick?: (gruppe: string) => void;
 }
 
-export function VerteilungsDiagramm({ daten, hoehe = 360 }: Props) {
+export function VerteilungsDiagramm({ daten, hoehe = 360, onGruppeKlick }: Props) {
   const aufbereitet = daten.map((eintrag) => ({
     gruppe: eintrag.gruppe,
     median: eintrag.gehalt_median ?? 0,
@@ -33,7 +34,11 @@ export function VerteilungsDiagramm({ daten, hoehe = 360 }: Props) {
 
   return (
     <ResponsiveContainer width="100%" height={hoehe}>
-      <BarChart data={aufbereitet} layout="vertical" margin={{ top: 12, right: 16, left: 32, bottom: 8 }}>
+      <BarChart
+        data={aufbereitet}
+        layout="vertical"
+        margin={{ top: 12, right: 16, left: 32, bottom: 8 }}
+      >
         <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" horizontal={false} />
         <XAxis
           type="number"
@@ -64,7 +69,17 @@ export function VerteilungsDiagramm({ daten, hoehe = 360 }: Props) {
           }}
         />
         <Bar dataKey="p25" stackId="a" fill="transparent" />
-        <Bar dataKey="spannweite" stackId="a" fill="hsl(var(--accent))" radius={[0, 6, 6, 0]} />
+        <Bar
+          dataKey="spannweite"
+          stackId="a"
+          fill="hsl(var(--accent))"
+          radius={[0, 6, 6, 0]}
+          cursor={onGruppeKlick ? 'pointer' : 'default'}
+          onClick={(payload) => {
+            const gruppe = (payload as { gruppe?: string })?.gruppe;
+            if (gruppe && onGruppeKlick) onGruppeKlick(gruppe);
+          }}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

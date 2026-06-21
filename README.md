@@ -1,9 +1,11 @@
 # Data Job Radar Deutschland
 
-Analyseplattform fuer den deutschen IT-Arbeitsmarkt. Die Anwendung extrahiert
-taeglich Stellenangebote ueber die Adzuna API, normalisiert und transformiert
-sie ueber ein Bronze-Silver-Gold Data Lake, modelliert sie als Sternschema in
-DuckDB und stellt die Ergebnisse ueber ein modernes Dashboard zur Verfuegung.
+Analyseplattform fuer den deutschen IT-Arbeitsmarkt. Fuenf Quellen werden mehrmals
+taeglich zusammengefuehrt: Bundesagentur fuer Arbeit, Adzuna, The Muse, Remotive
+und Jobicy. Die Stellenangebote durchlaufen ein Bronze-Silver-Gold Data Lake,
+werden als Sternschema in DuckDB modelliert und ueber ein live-aktualisierbares
+Dashboard mit paginierten Ranglisten, Skill-Auswertungen und Gehaltsstatistiken
+zugaenglich gemacht.
 
 ## Schluesseleigenschaften
 
@@ -15,28 +17,28 @@ DuckDB und stellt die Ergebnisse ueber ein modernes Dashboard zur Verfuegung.
 ## Architektur auf einen Blick
 
 ```
-Adzuna API
-   |
-   v
-Ingestion (httpx + tenacity + Validierung) ---> Bronze (Parquet, partitioniert)
-                                                       |
-                                                       v
-                                                Silver (DuckDB SQL,
-                                                        Normalisierung,
-                                                        Skill-Extraktion)
-                                                       |
-                                                       v
-                                          dbt Core (Staging + Marts)
-                                                       |
-                                                       v
-                                          Gold (Sternschema in DuckDB)
-                                                       |
-                                                       v
-                                            FastAPI Backend (Port 8081)
-                                                       |
-                                                       v
-                                       Next.js Dashboard (statisch exportiert,
-                                       vom Backend ausgeliefert)
+Bundesagentur f. Arbeit
+Adzuna
+The Muse            }---> Ingestion (httpx + tenacity + Validierung)
+Remotive                        |
+Jobicy                          v
+                        Bronze (Parquet, partitioniert nach Quelle und Tag)
+                                |
+                                v
+                        Silver (DuckDB SQL, Normalisierung, Skill-Extraktion)
+                                |
+                                v
+                        dbt Core (Staging + Marts, Cross-Source-Dedup)
+                                |
+                                v
+                        Gold (Sternschema in DuckDB)
+                                |
+                                v
+                        FastAPI Backend (Port 8081)
+                                |
+                                v
+                        Next.js Dashboard (statisch exportiert,
+                        vom Backend ausgeliefert)
 ```
 
 Eine detaillierte Datenflussbeschreibung steht in [docs/datenfluss.md](docs/datenfluss.md).
@@ -45,7 +47,8 @@ Eine detaillierte Datenflussbeschreibung steht in [docs/datenfluss.md](docs/date
 
 ```
 data-job-radar/
-  ingestion/        Adzuna-Client, Validierung, Pipeline
+  ingestion/        Clients fuer fuenf Quellen (Bundesagentur, Adzuna, Muse, Remotive, Jobicy),
+                    Validierung, Pipeline mit Zero-Duplikat-Garantie
   data_lake/        Bronze, Silver, Gold (Parquet, DuckDB)
   skills/           Skill-Taxonomie und Extraktor
   transform/        dbt-Core-Projekt (Staging + Marts)
@@ -65,13 +68,14 @@ Die Pipeline laeuft **viermal pro Tag** automatisch: jeweils um 00:00, 06:00, 12
 und 18:00 UTC (Cron `0 */6 * * *`). `max_active_runs=1` verhindert ueberlappende
 Laeufe; eine laufende Pipeline blockiert den naechsten Schedule, bis sie fertig ist.
 
-Auch bei mehreren Laeufen pro Tag wird **garantiert kein Duplikat** in den Gold-Tabellen
-landen. Es gibt vier unabhaengige Schutzebenen:
+Jeder Lauf fragt alle fuenf Quellen ab: Bundesagentur fuer Arbeit, Adzuna, The Muse,
+Remotive und Jobicy. Auch bei mehreren Laeufen und mehreren Quellen landet
+**garantiert kein Duplikat** in den Gold-Tabellen. Es gibt vier unabhaengige Schutzebenen:
 
-1. **Silver-SQL** dedupliziert mit `ROW_NUMBER() OVER (PARTITION BY adzuna_id ORDER BY abruf_zeitpunkt DESC)` innerhalb des Tagespartitions-Files.
-2. **dbt-Staging-Modell** wiederholt die Deduplizierung quer ueber **alle** Silver-Dateien (also auch ueber alle Tage hinweg).
-3. **dbt-Unique-Test** auf `fact_jobs.adzuna_id` prueft das Ergebnis nach jedem Lauf. Bei der kleinsten Verletzung faellt die Pipeline rot und der Verantwortliche bekommt eine Mail an `jeunaj3@gmail.com`.
-4. **Bronze-Dateinamen** enthalten eine Korrelationskennung, sodass parallele Schreibvorgaenge sich nicht ueberschreiben koennen.
+1. **Silver-SQL** dedupliziert per `ROW_NUMBER() OVER (PARTITION BY job_id ORDER BY abruf_zeitpunkt DESC)` innerhalb jedes Tagespartitions-Files.
+2. **dbt-Staging-Modell** wiederholt die Deduplizierung quer ueber **alle** Silver-Dateien (also auch ueber alle Tage und Quellen hinweg).
+3. **dbt-Unique-Test** auf `fact_jobs.job_id` prueft das Ergebnis nach jedem Lauf. Bei der kleinsten Verletzung faellt die Pipeline rot und der Verantwortliche bekommt eine Mail an `jeunaj3@gmail.com`.
+4. **Bronze-Dateinamen** enthalten eine Korrelationskennung und den Quellnamen, sodass parallele Schreibvorgaenge sich nicht ueberschreiben koennen.
 
 Frequenz aendern: In `orchestration/dags/dag_arbeitsmarkt.py` den `schedule`-Wert anpassen:
 
@@ -197,6 +201,15 @@ unter `/diagramme/<name>.svg` und in der `/wiki/`-Seite erreichbar sind.
 
 ## Live-Dashboard
 
-- Uebersicht: `https://pgadmin.thetransporterlabs.de/`
-- Stellenanzeigen mit Mehr-Laden-Pagination und direkten Links zur Adzuna-Anzeige: `/anzeigen/`
-- Wiki-Seite mit Projekt-Erklaerung, Architektur und allen Diagrammen: `/wiki/`
+Alle Seiten laden initial 50 Eintraege und bieten einen "Mehr laden"-Button, sobald weitere
+Eintraege vorhanden sind.
+
+| Seite | URL | Inhalt |
+|---|---|---|
+| Uebersicht | `/` | Kennzahlen, Zeitreihe, Gehaltsverteilung |
+| Stellenanzeigen | `/anzeigen/` | Filterbarer Katalog mit direkten Quell-Links |
+| Skills | `/skills/` | Rangliste und Balkendiagramm der gefragtesten Technologien |
+| Unternehmen | `/unternehmen/` | Rangliste nach Stellenanzahl und mittlerem Gehalt |
+| Staedte | `/staedte/` | Regionale Verteilung mit Karte und Tabelle |
+| Trends | `/trends/` | Zeitreihe und Gehaltsverteilung nach Kategorie |
+| Wiki | `/wiki/` | Projekt-Erklaerung, Architektur und alle Diagramme |

@@ -17,10 +17,11 @@ router = APIRouter(prefix="/skills", tags=["Skills"])
 @router.get(
     "",
     response_model=List[SkillKennzahl],
-    summary="Top Skills nach Anzahl Nennungen",
+    summary="Top Skills nach Anzahl Nennungen (paginiert)",
 )
 def top_skills(
     engine: Annotated[DuckDBEngine, Depends(get_engine)],
-    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0, le=10000)] = 0,
 ) -> List[SkillKennzahl]:
-    return StatsService(engine).top_skills(limit=limit)
+    return StatsService(engine).top_skills(limit=limit, offset=offset)

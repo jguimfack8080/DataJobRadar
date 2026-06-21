@@ -43,9 +43,9 @@ class StatsService:
             spaeteste_anzeige=zeile.get("spaeteste_anzeige"),
         )
 
-    @cachen(lambda self, limit=20: ("skills", limit))
-    def top_skills(self, limit: int = 20) -> List[SkillKennzahl]:
-        zeilen = abfrage_top_skills(self._engine, limit=limit)
+    @cachen(lambda self, limit=20, offset=0: ("skills", limit, offset))
+    def top_skills(self, limit: int = 20, offset: int = 0) -> List[SkillKennzahl]:
+        zeilen = abfrage_top_skills(self._engine, limit=limit, offset=offset)
         return [
             SkillKennzahl(
                 skill=z["skill"],

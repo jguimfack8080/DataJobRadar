@@ -201,7 +201,9 @@ def abfrage_kennzahlen_gesamt(engine: DuckDBEngine) -> dict[str, Any]:
     return ergebnis or {}
 
 
-def abfrage_top_skills(engine: DuckDBEngine, limit: int = 20) -> List[dict[str, Any]]:
+def abfrage_top_skills(
+    engine: DuckDBEngine, limit: int = 20, offset: int = 0
+) -> List[dict[str, Any]]:
     sql = f"""
         SELECT skill,
                COUNT(*)::BIGINT AS anzahl,
@@ -209,9 +211,9 @@ def abfrage_top_skills(engine: DuckDBEngine, limit: int = 20) -> List[dict[str, 
         FROM {_FAKT_SKILLS}
         GROUP BY skill
         ORDER BY anzahl DESC
-        LIMIT ?
+        LIMIT ? OFFSET ?
     """
-    return engine.abfragen(sql, [limit])
+    return engine.abfragen(sql, [limit, offset])
 
 
 def abfrage_top_unternehmen(

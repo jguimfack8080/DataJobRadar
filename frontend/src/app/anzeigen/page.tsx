@@ -2,19 +2,19 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ExternalLink, Filter, X } from 'lucide-react';
+import { Bookmark, BookmarkCheck, CheckCircle2, ExternalLink, Filter, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FehlerAnzeige } from '@/components/ui/fehler-anzeige';
 import { LeererZustand } from '@/components/ui/leerer-zustand';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FilterFacetten, Job, JobsFilter, JobsSeite } from '@/lib/api';
 import { ApiFehler, QUELLEN_BESCHRIFTUNG, endpunkte, holen } from '@/lib/api';
-import { formatDatum, formatGehalt } from '@/lib/utils';
+import { cn, formatDatumZeit, formatGehalt } from '@/lib/utils';
+import { type JobStatus, useJobSpeicher } from '@/hooks/use-job-speicher';
 
 const SEITENGROESSE = 25;
 
 type FilterZustand = Omit<JobsFilter, 'nach' | 'limit'>;
-
 const LEER: FilterZustand = {};
 
 function filterAusUrl(params: URLSearchParams): FilterZustand {
@@ -68,12 +68,12 @@ function AnzeigenInhalt() {
   const [ladend, setLadend] = useState<'init' | 'mehr' | null>('init');
   const [fehler, setFehler] = useState<string | null>(null);
   const [filterOffen, setFilterOffen] = useState(false);
+  const [nurNeue, setNurNeue] = useState(false);
+
+  const speicher = useJobSpeicher();
 
   useEffect(() => {
-    endpunkte
-      .facetten()
-      .then(setFacetten)
-      .catch(() => setFacetten(null));
+    endpunkte.facetten().then(setFacetten).catch(() => setFacetten(null));
   }, []);
 
   useEffect(() => {
@@ -89,7 +89,9 @@ function AnzeigenInhalt() {
           limit: SEITENGROESSE,
           nach: cursor ?? undefined,
         });
-        setJobs((bestehend) => (cursor ? [...bestehend, ...ergebnis.treffer] : ergebnis.treffer));
+        setJobs((bestehend) =>
+          cursor ? [...bestehend, ...ergebnis.treffer] : ergebnis.treffer
+        );
         setNextKeyset(ergebnis.naechstes_keyset);
         setFehler(null);
       } catch (problem) {
@@ -120,8 +122,13 @@ function AnzeigenInhalt() {
     return n;
   }, [angewendet]);
 
-  const anwenden = (ereignis: React.FormEvent) => {
-    ereignis.preventDefault();
+  const sichtbareJobs = useMemo(() => {
+    if (!nurNeue) return jobs;
+    return jobs.filter((j) => !speicher.getStatus(j.kennung).includes('gesehen'));
+  }, [jobs, nurNeue, speicher]);
+
+  const anwenden = (e: React.FormEvent) => {
+    e.preventDefault();
     setAngewendet(entwurf);
   };
 
@@ -132,24 +139,25 @@ function AnzeigenInhalt() {
 
   const setText =
     (feld: keyof FilterZustand) =>
-    (ereignis: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const wert = ereignis.target.value;
-      setEntwurf((alt) => ({ ...alt, [feld]: wert ? wert : undefined }) as FilterZustand);
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const wert = e.target.value;
+      setEntwurf((alt) => ({ ...alt, [feld]: wert || undefined }) as FilterZustand);
     };
 
   const setZahl =
-    (feld: keyof FilterZustand) => (ereignis: React.ChangeEvent<HTMLInputElement>) => {
-      const wert = ereignis.target.value;
+    (feld: keyof FilterZustand) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const wert = e.target.value;
       setEntwurf((alt) => ({ ...alt, [feld]: wert ? Number(wert) : undefined }) as FilterZustand);
     };
 
   const skillsUmschalten = (skill: string) => {
     setEntwurf((alt) => {
       const aktuell = alt.skill ?? [];
-      const enthalten = aktuell.includes(skill);
       return {
         ...alt,
-        skill: enthalten ? aktuell.filter((s) => s !== skill) : [...aktuell, skill],
+        skill: aktuell.includes(skill)
+          ? aktuell.filter((s) => s !== skill)
+          : [...aktuell, skill],
       };
     });
   };
@@ -157,10 +165,11 @@ function AnzeigenInhalt() {
   const quellenUmschalten = (quelle: string) => {
     setEntwurf((alt) => {
       const aktuell = alt.quelle ?? [];
-      const enthalten = aktuell.includes(quelle);
       return {
         ...alt,
-        quelle: enthalten ? aktuell.filter((q) => q !== quelle) : [...aktuell, quelle],
+        quelle: aktuell.includes(quelle)
+          ? aktuell.filter((q) => q !== quelle)
+          : [...aktuell, quelle],
       };
     });
   };
@@ -170,8 +179,8 @@ function AnzeigenInhalt() {
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Stellenanzeigen</h1>
         <p className="text-sm text-muted-foreground">
-          Vollstaendige Filtersuite ueber alle Quellen. Klicken Sie eine Karte an, um zur
-          Original-Anzeige zu springen.
+          Vollstaendige Filtersuite ueber alle Quellen. Anzeige speichern oder als beworben
+          markieren, um den Ueberblick zu behalten.
         </p>
       </header>
 
@@ -180,11 +189,11 @@ function AnzeigenInhalt() {
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-4 w-4" aria-hidden />
             <span>Filter</span>
-            {aktivAnzahl > 0 ? (
+            {aktivAnzahl > 0 && (
               <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
                 {aktivAnzahl}
               </span>
-            ) : null}
+            )}
           </CardTitle>
           <div className="flex gap-2">
             <button
@@ -194,7 +203,7 @@ function AnzeigenInhalt() {
             >
               {filterOffen ? 'Einklappen' : 'Mehr Filter'}
             </button>
-            {aktivAnzahl > 0 ? (
+            {aktivAnzahl > 0 && (
               <button
                 type="button"
                 onClick={zuruecksetzen}
@@ -203,7 +212,7 @@ function AnzeigenInhalt() {
                 <X className="h-3 w-3" aria-hidden />
                 Zuruecksetzen
               </button>
-            ) : null}
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -242,7 +251,7 @@ function AnzeigenInhalt() {
               </Feld>
             </div>
 
-            {facetten && facetten.quellen.length > 0 ? (
+            {facetten && facetten.quellen.length > 0 && (
               <div>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Datenquellen (Mehrfachauswahl, ODER-Verknuepfung)
@@ -267,9 +276,9 @@ function AnzeigenInhalt() {
                   })}
                 </div>
               </div>
-            ) : null}
+            )}
 
-            {filterOffen ? (
+            {filterOffen && (
               <>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <Feld label="Bundesland">
@@ -335,8 +344,8 @@ function AnzeigenInhalt() {
                       <input
                         type="checkbox"
                         checked={entwurf.nur_mit_gehalt ?? false}
-                        onChange={(ereignis) =>
-                          setEntwurf((alt) => ({ ...alt, nur_mit_gehalt: ereignis.target.checked }))
+                        onChange={(e) =>
+                          setEntwurf((alt) => ({ ...alt, nur_mit_gehalt: e.target.checked }))
                         }
                       />
                       <span>Anzeigen ohne Gehalt ausblenden</span>
@@ -385,7 +394,7 @@ function AnzeigenInhalt() {
                   </Feld>
                 </div>
 
-                {facetten && facetten.skills.length > 0 ? (
+                {facetten && facetten.skills.length > 0 && (
                   <div>
                     <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       Skills (Mehrfachauswahl, UND-Verknuepfung)
@@ -410,9 +419,9 @@ function AnzeigenInhalt() {
                       })}
                     </div>
                   </div>
-                ) : null}
+                )}
               </>
-            ) : null}
+            )}
 
             <div className="flex justify-end">
               <button
@@ -427,28 +436,56 @@ function AnzeigenInhalt() {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle>
             Ergebnisse
-            {jobs.length > 0 ? (
-              <span className="ml-2 text-xs text-muted-foreground">
-                {jobs.length} {nextKeyset ? '(weitere verfuegbar)' : 'angezeigt'}
+            {jobs.length > 0 && (
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                {sichtbareJobs.length}
+                {nurNeue && sichtbareJobs.length !== jobs.length
+                  ? ` von ${jobs.length}`
+                  : ''}
+                {nextKeyset ? ' (weitere verfuegbar)' : ' angezeigt'}
               </span>
-            ) : null}
+            )}
           </CardTitle>
+          <button
+            type="button"
+            onClick={() => setNurNeue((v) => !v)}
+            className={cn(
+              'rounded-md border px-3 py-1.5 text-xs transition-colors',
+              nurNeue
+                ? 'border-foreground bg-foreground text-background'
+                : 'bg-card text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Nur Neue
+          </button>
         </CardHeader>
         <CardContent>
           {ladend === 'init' && <Skeleton className="h-64 w-full" />}
           {fehler && <FehlerAnzeige meldung={fehler} />}
-          {ladend !== 'init' && !fehler && jobs.length === 0 && (
-            <LeererZustand titel="Keine Treffer fuer die aktuellen Filter." />
+          {ladend !== 'init' && !fehler && sichtbareJobs.length === 0 && (
+            <LeererZustand
+              titel={
+                nurNeue
+                  ? 'Alle geladenen Anzeigen wurden bereits angesehen.'
+                  : 'Keine Treffer fuer die aktuellen Filter.'
+              }
+            />
           )}
-          {jobs.length > 0 && (
+          {sichtbareJobs.length > 0 && (
             <>
               <ul className="divide-y">
-                {jobs.map((eintrag) => (
-                  <li key={eintrag.kennung} className="py-4">
-                    <JobKarte job={eintrag} />
+                {sichtbareJobs.map((job) => (
+                  <li key={job.kennung} className="py-4">
+                    <JobKarte
+                      job={job}
+                      status={speicher.getStatus(job.kennung)}
+                      onGesehen={() => speicher.markiereGesehen(job)}
+                      onToggleGespeichert={() => speicher.toggleGespeichert(job)}
+                      onBeworben={() => speicher.setzeBeworben(job)}
+                    />
                   </li>
                 ))}
               </ul>
@@ -491,65 +528,127 @@ function Feld({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-function JobKarte({ job }: { job: Job }) {
-  const ortszeile = [job.unternehmen, job.stadt, job.bundesland].filter(Boolean).join(' - ');
-  const quellenLabel = job.quelle
-    ? QUELLEN_BESCHRIFTUNG[job.quelle] ?? job.quelle
-    : null;
-  const Inhalt = (
-    <div className="grid gap-2 sm:grid-cols-[1fr,auto] sm:items-start">
-      <div>
-        <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
-          <span>{job.titel}</span>
-          {job.angebots_url ? (
-            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
-          ) : null}
-          {quellenLabel ? (
-            <span className="rounded-full border bg-card px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-              {quellenLabel}
-            </span>
-          ) : null}
-        </p>
-        {ortszeile ? <p className="text-xs text-muted-foreground">{ortszeile}</p> : null}
-        <p className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-          {job.kategorie ? <span>Kategorie: {job.kategorie}</span> : null}
-          {job.vertragszeit ? <span>Zeit: {job.vertragszeit}</span> : null}
-          {job.vertragstyp ? <span>Typ: {job.vertragstyp}</span> : null}
-        </p>
-        {job.skills.length > 0 ? (
-          <p className="mt-2 flex flex-wrap gap-1">
-            {job.skills.slice(0, 10).map((wert) => (
-              <span
-                key={wert}
-                className="rounded-full border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground"
+interface JobKarteProps {
+  job: Job;
+  status: JobStatus[];
+  onGesehen: () => void;
+  onToggleGespeichert: () => void;
+  onBeworben: () => void;
+}
+
+function JobKarte({ job, status, onGesehen, onToggleGespeichert, onBeworben }: JobKarteProps) {
+  const istGesehen = status.includes('gesehen');
+  const istGespeichert = status.includes('gespeichert');
+  const istBeworben = status.includes('beworben');
+  const quellenLabel = job.quelle ? (QUELLEN_BESCHRIFTUNG[job.quelle] ?? job.quelle) : null;
+  const ortszeile = [job.unternehmen, job.stadt, job.bundesland].filter(Boolean).join(' · ');
+
+  return (
+    <div className="grid gap-2 rounded-md p-2 -m-2 transition-colors hover:bg-muted/60">
+      <div className="grid gap-2 sm:grid-cols-[1fr,auto] sm:items-start">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            {job.angebots_url ? (
+              <a
+                href={job.angebots_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onGesehen}
+                className="inline-flex items-center gap-1.5 text-sm font-medium underline-offset-2 hover:underline"
+                aria-label={`Anzeige '${job.titel}' oeffnen`}
               >
-                {wert}
+                {job.titel}
+                <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+              </a>
+            ) : (
+              <span className="text-sm font-medium">{job.titel}</span>
+            )}
+            {quellenLabel && (
+              <span className="rounded-full border bg-card px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                {quellenLabel}
               </span>
-            ))}
+            )}
+            {istBeworben && (
+              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                Beworben
+              </span>
+            )}
+            {istGespeichert && !istBeworben && (
+              <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-600 dark:text-cyan-400">
+                Gespeichert
+              </span>
+            )}
+            {istGesehen && !istGespeichert && !istBeworben && (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                Gesehen
+              </span>
+            )}
+          </div>
+
+          {ortszeile && (
+            <p className="mt-0.5 text-xs text-muted-foreground">{ortszeile}</p>
+          )}
+
+          <p className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+            {job.kategorie && <span>Kategorie: {job.kategorie}</span>}
+            {job.vertragszeit && <span>Zeit: {job.vertragszeit}</span>}
+            {job.vertragstyp && <span>Typ: {job.vertragstyp}</span>}
           </p>
-        ) : null}
-      </div>
-      <div className="text-right text-xs text-muted-foreground sm:min-w-32">
-        <p className="kennzahl text-sm font-medium text-foreground">
-          {formatGehalt(job.gehalt_mittel)}
-        </p>
-        <p>{formatDatum(job.veroeffentlicht_am)}</p>
+
+          {job.skills.length > 0 && (
+            <p className="mt-2 flex flex-wrap gap-1">
+              {job.skills.slice(0, 10).map((wert) => (
+                <span
+                  key={wert}
+                  className="rounded-full border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground"
+                >
+                  {wert}
+                </span>
+              ))}
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-col items-end gap-2 sm:min-w-36">
+          <div className="text-right">
+            <p className="kennzahl text-sm font-medium text-foreground">
+              {formatGehalt(job.gehalt_mittel)}
+            </p>
+            <p className="text-xs text-muted-foreground">{formatDatumZeit(job.veroeffentlicht_am)}</p>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {istGespeichert && !istBeworben && (
+              <button
+                type="button"
+                onClick={onBeworben}
+                title="Als beworben markieren"
+                className="inline-flex items-center gap-1 rounded-md border bg-card px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400"
+              >
+                <CheckCircle2 className="h-3 w-3" aria-hidden />
+                Beworben
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onToggleGespeichert}
+              title={istGespeichert ? 'Aus Gespeicherten entfernen' : 'Speichern'}
+              className={cn(
+                'inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors',
+                istGespeichert
+                  ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
+                  : 'bg-card text-muted-foreground hover:border-cyan-500/40 hover:text-cyan-600 dark:hover:text-cyan-400'
+              )}
+            >
+              {istGespeichert ? (
+                <BookmarkCheck className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <Bookmark className="h-3.5 w-3.5" aria-hidden />
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
-
-  if (job.angebots_url) {
-    return (
-      <a
-        href={job.angebots_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block rounded-md p-2 -m-2 transition-colors hover:bg-muted/60 focus:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label={`Anzeige '${job.titel}' bei ${quellenLabel ?? 'der Quelle'} oeffnen`}
-      >
-        {Inhalt}
-      </a>
-    );
-  }
-  return <div className="p-2 -m-2">{Inhalt}</div>;
 }

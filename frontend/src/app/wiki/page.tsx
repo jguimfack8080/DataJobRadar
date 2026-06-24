@@ -56,15 +56,31 @@ export default function WikiSeite() {
         />
         <Anleitung
           titel="Stellenanzeigen"
-          zweck="Konkrete Stellen suchen und direkt zur Original-Anzeige springen."
+          zweck="Konkrete Stellen suchen, speichern und direkt zur Original-Anzeige springen."
           schritte={[
             'Geben Sie oben einen Suchbegriff ein (Titel oder Unternehmen) und klicken Sie "Filter anwenden".',
             'Direkt unter den Eingabefeldern koennen Sie die Datenquellen auswaehlen (Bundesagentur, Adzuna, The Muse, Remotive, Jobicy). Mehrfachauswahl, ODER-Verknuepfung.',
             'Mit "Mehr Filter" oeffnen Sie die volle Filtersuite: Bundesland, Kategorie, Vertragstyp, Vertragszeit, Gehaltsspanne, Datumsbereich, Skills.',
             'Skills sind Mehrfachauswahl mit UND-Verknuepfung: Wer "Python" und "AWS" anklickt, sieht nur Anzeigen mit beiden.',
-            'Klicken Sie eine Trefferzeile an, um die Original-Anzeige bei der jeweiligen Quelle in einem neuen Tab zu oeffnen.',
+            'Klicken Sie den Titel einer Anzeige an, um sie bei der jeweiligen Quelle in einem neuen Tab zu oeffnen. Die Anzeige erhaelt danach das Badge "Gesehen" (grau).',
+            'Das Lesezeichen-Symbol rechts auf jeder Karte speichert die Anzeige lokal. Gespeicherte Anzeigen sind mit einem cyan Badge markiert.',
+            'Sobald eine Anzeige gespeichert ist, erscheint der Button "Beworben", um die Bewerbung zu vermerken (gruenes Badge).',
+            'Der Schalter "Nur Neue" in der Ergebnis-Kopfzeile blendet alle bereits gesehenen Anzeigen aus.',
             'Unten erscheint "Mehr laden", solange weitere Treffer verfuegbar sind.',
             'Mit "Zuruecksetzen" loeschen Sie alle Filter auf einen Klick.',
+          ]}
+        />
+        <Anleitung
+          titel="Gespeicherte Stellen"
+          zweck="Gespeicherte und beworbene Anzeigen auf einen Blick verwalten."
+          schritte={[
+            'Die Seite ist ueber "Gespeichert" in der linken Navigation erreichbar. Das Lesezeichen-Symbol zeigt die Anzahl gespeicherter Stellen.',
+            'Zwei Bereiche: "Gespeichert" (Anzeigen zum spaeteren Bewerben) und "Beworben" (bereits beworbene Stellen).',
+            'Klicken Sie auf den Titel, um die Original-Anzeige direkt zu oeffnen.',
+            'Mit "Beworben" verschieben Sie eine gespeicherte Anzeige in den Bereich "Beworben".',
+            'Mit dem Papierkorb-Symbol entfernen Sie eine Anzeige vollstaendig aus dem lokalen Speicher.',
+            'Alle Daten liegen ausschliesslich in Ihrem Browser (LocalStorage). Sie werden nicht uebertragen oder synchronisiert.',
+            'Hinweis: Da Anzeigen bei den Quellen jederzeit ablaufen koennen, empfehlen wir, sich zeitnah zu bewerben.',
           ]}
         />
         <Anleitung

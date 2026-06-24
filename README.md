@@ -115,10 +115,10 @@ Stand des aktuellen Deployments:
     - Mehr als 3000 aktive Stellenanzeigen aus Deutschland im Bestand
     - Hunderte Unternehmen, dutzende Standorte mit Gehaltsstatistiken
     - Live-Beispiel: Berlin Median 80.000 EUR, Bayern Median 91.250 EUR
-- Alle 17 ueberprueften Endpunkte (API + Frontend-Seiten) antworten mit HTTP 200:
+- Alle 19 ueberprueften Endpunkte (API + Frontend-Seiten) antworten mit HTTP 200:
     - System: `/api/v1/health`, `/api/v1/ready`, `/api/v1/openapi.json`, `/api/v1/docs`
     - Daten: `/api/v1/stats`, `/api/v1/jobs`, `/api/v1/skills`, `/api/v1/companies`, `/api/v1/cities`, `/api/v1/trends/zeitreihe`, `/api/v1/trends/gehaltsverteilung`
-    - Frontend: `/`, `/anzeigen/`, `/skills/`, `/unternehmen/`, `/staedte/`, `/trends/`
+    - Frontend: `/`, `/anzeigen/`, `/skills/`, `/unternehmen/`, `/staedte/`, `/trends/`, `/gespeichert/`, `/wiki/`
 - Health-Header `X-Korrelations-Kennung` ist in jeder Antwort gesetzt.
 - Container-Stack `docker compose ps`: `postgres`, `airflow-scheduler`, `airflow-webserver`, `backend` -> jeweils `running (healthy)`.
 
@@ -207,9 +207,10 @@ Eintraege vorhanden sind.
 | Seite | URL | Inhalt |
 |---|---|---|
 | Uebersicht | `/` | Kennzahlen, Zeitreihe, Gehaltsverteilung |
-| Stellenanzeigen | `/anzeigen/` | Filterbarer Katalog mit direkten Quell-Links |
+| Stellenanzeigen | `/anzeigen/` | Filterbarer Katalog mit Quell-Links, Speicherfunktion, Status-Badges (Gesehen, Gespeichert, Beworben) und "Nur Neue"-Filter |
 | Skills | `/skills/` | Rangliste und Balkendiagramm der gefragtesten Technologien |
 | Unternehmen | `/unternehmen/` | Rangliste nach Stellenanzahl und mittlerem Gehalt |
 | Staedte | `/staedte/` | Regionale Verteilung mit Karte und Tabelle |
 | Trends | `/trends/` | Zeitreihe und Gehaltsverteilung nach Kategorie |
+| Gespeichert | `/gespeichert/` | Verwaltung gespeicherter und beworbener Stellen (lokaler Browserspeicher) |
 | Wiki | `/wiki/` | Projekt-Erklaerung, Architektur und alle Diagramme |

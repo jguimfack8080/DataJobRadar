@@ -19,9 +19,22 @@ export function formatGehalt(wert: number | null | undefined): string {
   }).format(wert);
 }
 
+function zumDatum(wert: string | Date | null | undefined): Date | null {
+  if (!wert) return null;
+  const d = typeof wert === 'string' ? new Date(wert) : wert;
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+const BERLIN = 'Europe/Berlin';
+
 export function formatDatum(wert: string | Date | null | undefined): string {
-  if (!wert) return '-';
-  const datum = typeof wert === 'string' ? new Date(wert) : wert;
-  if (Number.isNaN(datum.getTime())) return '-';
-  return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' }).format(datum);
+  const d = zumDatum(wert);
+  if (!d) return '-';
+  return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeZone: BERLIN }).format(d);
+}
+
+export function formatDatumZeit(wert: string | Date | null | undefined): string {
+  const d = zumDatum(wert);
+  if (!d) return '-';
+  return new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short', timeZone: BERLIN }).format(d);
 }

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import {
   BarChart3,
+  Bookmark,
   BookOpen,
   Briefcase,
   Building2,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigation } from './navigation-context';
+import { useJobSpeicher } from '@/hooks/use-job-speicher';
 
 const navigation = [
   { name: 'Uebersicht', href: '/', icon: BarChart3 },
@@ -31,6 +33,7 @@ const QUELLEN = ['Bundesagentur f. Arbeit', 'Adzuna', 'The Muse', 'Remotive', 'J
 export function Sidebar() {
   const pfad = usePathname();
   const { mobileOffen, schliessen } = useNavigation();
+  const { anzahlGespeichert } = useJobSpeicher();
 
   useEffect(() => {
     schliessen();
@@ -107,6 +110,25 @@ export function Sidebar() {
               </Link>
             );
           })}
+          <Link
+            href="/gespeichert"
+            className={cn(
+              'flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ease-sanft',
+              pfad === '/gespeichert'
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
+          >
+            <span className="flex items-center gap-3">
+              <Bookmark className="h-4 w-4" aria-hidden />
+              Gespeichert
+            </span>
+            {anzahlGespeichert > 0 && (
+              <span className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-600 dark:text-cyan-400">
+                {anzahlGespeichert}
+              </span>
+            )}
+          </Link>
         </nav>
 
         <div className="border-t px-5 py-4">

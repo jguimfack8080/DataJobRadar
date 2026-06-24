@@ -17,6 +17,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useNavigation } from './navigation-context';
 import { useJobSpeicher } from '@/hooks/use-job-speicher';
+import { ProfilWidget } from './profil-widget';
 
 const navigation = [
   { name: 'Uebersicht', href: '/', icon: BarChart3 },
@@ -130,6 +131,10 @@ export function Sidebar() {
             )}
           </Link>
         </nav>
+
+        <div className="border-t px-5 py-4">
+          <ProfilWidget />
+        </div>
 
         <div className="border-t px-5 py-4">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">

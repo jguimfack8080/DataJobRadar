@@ -49,8 +49,9 @@ services:
     volumes:
       - djr-lake:/data/lake
       - djr-warehouse:/data/warehouse
+      - djr-userdata:/data/userdata
       - airflow-logs:/opt/airflow/logs
-    command: sh -c "mkdir -p /data/lake/bronze /data/lake/silver /data/lake/gold /data/warehouse && chown -R 50000:0 /data/lake /data/warehouse /opt/airflow/logs && chmod -R 0775 /data/lake /data/warehouse /opt/airflow/logs"
+    command: sh -c "mkdir -p /data/lake/bronze /data/lake/silver /data/lake/gold /data/warehouse /data/userdata && chown -R 50000:0 /data/lake /data/warehouse /opt/airflow/logs && chown -R 1000:0 /data/userdata && chmod -R 0775 /data/lake /data/warehouse /opt/airflow/logs /data/userdata"
     restart: "no"
 
   postgres:
@@ -137,6 +138,7 @@ services:
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:3000}
       BACKEND_CACHE_TTL_SECONDS: ${BACKEND_CACHE_TTL_SECONDS:-300}
       BACKEND_RATE_LIMIT_PER_MINUTE: ${BACKEND_RATE_LIMIT_PER_MINUTE:-120}
+      USER_DATA_PATH: /data/userdata/nutzer.db
       DATA_LAKE_ROOT: /data/lake
       DUCKDB_PATH: /data/warehouse/djr.duckdb
       LOG_FORMAT: ${LOG_FORMAT:-json}
@@ -144,6 +146,7 @@ services:
     volumes:
       - djr-lake:/data/lake:ro
       - djr-warehouse:/data/warehouse:ro
+      - djr-userdata:/data/userdata
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8081}:8081"
     healthcheck:
@@ -162,3 +165,4 @@ volumes:
   airflow-logs:
   djr-lake:
   djr-warehouse:
+  djr-userdata:

@@ -73,6 +73,19 @@ export default function WikiSeite() {
           ]}
         />
         <Anleitung
+          titel="Profil und geraeteuebergreifender Verlauf"
+          zweck="Aktivitaeten (gesehene, gespeicherte und beworbene Anzeigen) auf anderen Geraeten wiederherstellen."
+          schritte={[
+            'Geben Sie in der linken Seitenleiste unten einen selbst gewaehlten Username ein (3-30 Zeichen: Kleinbuchstaben, Ziffern, Unterstrich). Kein Passwort erforderlich.',
+            'Beim Verbinden werden Ihre lokalen Aktivitaeten mit dem Server zusammengefuehrt. Sie sehen danach Ihren vollstaendigen Verlauf.',
+            'Auf einem anderen Geraet geben Sie denselben Username ein. Ihre gespeicherten und beworbenen Anzeigen erscheinen sofort.',
+            'Alle Aenderungen werden automatisch alle 30 Sekunden sowie beim Schliessen des Tabs synchronisiert. Das Icon neben Ihrem Username zeigt den Sync-Status.',
+            'Zum Abmelden klicken Sie das Abmelden-Symbol neben Ihrem Username. Ihre lokalen Daten bleiben unveraendert.',
+            'Wichtig: Da kein Passwort benoetigt wird, sollten Sie einen schwer erratbaren Username waehlen. Wer denselben Username kennt, kann denselben Verlauf lesen.',
+            'Die Anwendung funktioniert vollstaendig ohne Profil (anonymer Modus). Nur die geraeteuebergreifende Synchronisation erfordert einen Username.',
+          ]}
+        />
+        <Anleitung
           titel="Gespeicherte Stellen"
           zweck="Gespeicherte und beworbene Anzeigen auf einen Blick verwalten."
           schritte={[

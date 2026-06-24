@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Bookmark, BookmarkCheck, CheckCircle2, ExternalLink, Filter, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -543,109 +543,248 @@ function JobKarte({ job, status, onGesehen, onToggleGespeichert, onBeworben }: J
   const quellenLabel = job.quelle ? (QUELLEN_BESCHRIFTUNG[job.quelle] ?? job.quelle) : null;
   const ortszeile = [job.unternehmen, job.stadt, job.bundesland].filter(Boolean).join(' · ');
 
+  const [delta, setDelta] = useState(0);
+  const [animiert, setAnimiert] = useState(false);
+
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const richtung = useRef<'h' | 'v' | null>(null);
+  const aktiv = useRef(false);
+  const hatGewischt = useRef(false);
+  const cbRef = useRef({ onBeworben, onToggleGespeichert });
+
+  useEffect(() => {
+    cbRef.current = { onBeworben, onToggleGespeichert };
+  });
+
+  const SCHWELLE = 80;
+
+  const abschliessen = useCallback((dx: number) => {
+    aktiv.current = false;
+    hatGewischt.current = Math.abs(dx) > 8;
+    const warH = richtung.current === 'h';
+    richtung.current = null;
+    setAnimiert(true);
+
+    if (warH && dx > SCHWELLE) {
+      setDelta(100);
+      setTimeout(() => { cbRef.current.onBeworben(); setDelta(0); }, 180);
+    } else if (warH && dx < -SCHWELLE) {
+      setDelta(-100);
+      setTimeout(() => { cbRef.current.onToggleGespeichert(); setDelta(0); }, 180);
+    } else {
+      setDelta(0);
+    }
+    setTimeout(() => setAnimiert(false), 600);
+  }, []);
+
+  const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    startX.current = e.clientX;
+    startY.current = e.clientY;
+    richtung.current = null;
+    aktiv.current = true;
+    hatGewischt.current = false;
+    setAnimiert(false);
+  }, []);
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (!aktiv.current) return;
+      const dx = e.clientX - startX.current;
+      const dy = e.clientY - startY.current;
+      if (richtung.current === null) {
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+        richtung.current = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      }
+      if (richtung.current !== 'h') return;
+      setDelta(dx);
+    };
+    const onUp = (e: PointerEvent) => {
+      if (!aktiv.current) return;
+      abschliessen(e.clientX - startX.current);
+    };
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [abschliessen]);
+
+  const fortschrittRechts = Math.min(1, Math.max(0, delta / SCHWELLE));
+  const fortschrittLinks = Math.min(1, Math.max(0, -delta / SCHWELLE));
+  const passiertSchwelleRechts = delta > SCHWELLE;
+  const passiertSchwelleLinks = delta < -SCHWELLE;
+
   return (
-    <div className="grid gap-2 rounded-md p-2 -m-2 transition-colors hover:bg-muted/60">
-      <div className="grid gap-2 sm:grid-cols-[1fr,auto] sm:items-start">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            {job.angebots_url ? (
-              <a
-                href={job.angebots_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={onGesehen}
-                className="inline-flex items-center gap-1.5 text-sm font-medium underline-offset-2 hover:underline"
-                aria-label={`Anzeige '${job.titel}' oeffnen`}
-              >
-                {job.titel}
-                <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
-              </a>
-            ) : (
-              <span className="text-sm font-medium">{job.titel}</span>
-            )}
-            {quellenLabel && (
-              <span className="rounded-full border bg-card px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                {quellenLabel}
-              </span>
-            )}
-            {istBeworben && (
-              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                Beworben
-              </span>
-            )}
-            {istGespeichert && !istBeworben && (
-              <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-600 dark:text-cyan-400">
-                Gespeichert
-              </span>
-            )}
-            {istGesehen && !istGespeichert && !istBeworben && (
-              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
-                Gesehen
-              </span>
-            )}
-          </div>
-
-          {ortszeile && (
-            <p className="mt-0.5 text-xs text-muted-foreground">{ortszeile}</p>
-          )}
-
-          <p className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-            {job.kategorie && <span>Kategorie: {job.kategorie}</span>}
-            {job.vertragszeit && <span>Zeit: {job.vertragszeit}</span>}
-            {job.vertragstyp && <span>Typ: {job.vertragstyp}</span>}
-          </p>
-
-          {job.skills.length > 0 && (
-            <p className="mt-2 flex flex-wrap gap-1">
-              {job.skills.slice(0, 10).map((wert) => (
-                <span
-                  key={wert}
-                  className="rounded-full border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground"
-                >
-                  {wert}
-                </span>
-              ))}
-            </p>
-          )}
+    <div className="relative overflow-hidden rounded-md select-none">
+      {/* Swipe-rechts Hintergrund: Beworben */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex items-center rounded-md bg-emerald-500/10 pl-5"
+        style={{ opacity: fortschrittRechts }}
+      >
+        <div
+          className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400"
+          style={{
+            transform: `scale(${0.6 + fortschrittRechts * 0.55})`,
+            transition: 'transform 0.1s ease-out',
+            filter: passiertSchwelleRechts ? 'brightness(1.15)' : 'none',
+          }}
+        >
+          <CheckCircle2 className="h-6 w-6" aria-hidden />
+          <span className="text-sm font-semibold">Beworben</span>
         </div>
+      </div>
 
-        <div className="flex flex-col items-end gap-2 sm:min-w-36">
-          <div className="text-right">
-            <p className="kennzahl text-sm font-medium text-foreground">
-              {formatGehalt(job.gehalt_mittel)}
+      {/* Swipe-links Hintergrund: Gespeichert */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex items-center justify-end rounded-md bg-cyan-500/10 pr-5"
+        style={{ opacity: fortschrittLinks }}
+      >
+        <div
+          className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400"
+          style={{
+            transform: `scale(${0.6 + fortschrittLinks * 0.55})`,
+            transition: 'transform 0.1s ease-out',
+            filter: passiertSchwelleLinks ? 'brightness(1.15)' : 'none',
+          }}
+        >
+          <span className="text-sm font-semibold">
+            {istGespeichert ? 'Entfernen' : 'Speichern'}
+          </span>
+          {istGespeichert
+            ? <BookmarkCheck className="h-6 w-6" aria-hidden />
+            : <Bookmark className="h-6 w-6" aria-hidden />
+          }
+        </div>
+      </div>
+
+      {/* Karte (verschiebt sich) */}
+      <div
+        onPointerDown={onPointerDown}
+        className="relative touch-pan-y rounded-md p-2 -m-2 hover:bg-muted/60"
+        style={{
+          transform: `translateX(${delta}px) rotate(${delta * 0.008}deg)`,
+          ...(animiert ? {
+            transitionProperty: 'transform',
+            transitionDuration: '0.38s',
+            transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
+          } : {
+            transitionProperty: 'background-color',
+            transitionDuration: '150ms',
+            transitionTimingFunction: 'ease',
+          }),
+          willChange: 'transform',
+        }}
+      >
+        <div className="grid gap-2 sm:grid-cols-[1fr,auto] sm:items-start">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              {job.angebots_url ? (
+                <a
+                  href={job.angebots_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    if (hatGewischt.current) { e.preventDefault(); return; }
+                    onGesehen();
+                  }}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium underline-offset-2 hover:underline"
+                  aria-label={`Anzeige '${job.titel}' oeffnen`}
+                >
+                  {job.titel}
+                  <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                </a>
+              ) : (
+                <span className="text-sm font-medium">{job.titel}</span>
+              )}
+              {quellenLabel && (
+                <span className="rounded-full border bg-card px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {quellenLabel}
+                </span>
+              )}
+              {istBeworben && (
+                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                  Beworben
+                </span>
+              )}
+              {istGespeichert && !istBeworben && (
+                <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-600 dark:text-cyan-400">
+                  Gespeichert
+                </span>
+              )}
+              {istGesehen && !istGespeichert && !istBeworben && (
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                  Gesehen
+                </span>
+              )}
+            </div>
+
+            {ortszeile && (
+              <p className="mt-0.5 text-xs text-muted-foreground">{ortszeile}</p>
+            )}
+
+            <p className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+              {job.kategorie && <span>Kategorie: {job.kategorie}</span>}
+              {job.vertragszeit && <span>Zeit: {job.vertragszeit}</span>}
+              {job.vertragstyp && <span>Typ: {job.vertragstyp}</span>}
             </p>
-            <p className="text-xs text-muted-foreground">{formatDatumZeit(job.veroeffentlicht_am)}</p>
+
+            {job.skills.length > 0 && (
+              <p className="mt-2 flex flex-wrap gap-1">
+                {job.skills.slice(0, 10).map((wert) => (
+                  <span
+                    key={wert}
+                    className="rounded-full border bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground"
+                  >
+                    {wert}
+                  </span>
+                ))}
+              </p>
+            )}
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {istGespeichert && !istBeworben && (
+          <div className="flex flex-col items-end gap-2 sm:min-w-36">
+            <div className="text-right">
+              <p className="kennzahl text-sm font-medium text-foreground">
+                {formatGehalt(job.gehalt_mittel)}
+              </p>
+              <p className="text-xs text-muted-foreground">{formatDatumZeit(job.veroeffentlicht_am)}</p>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {istGespeichert && !istBeworben && (
+                <button
+                  type="button"
+                  onClick={onBeworben}
+                  title="Als beworben markieren"
+                  className="inline-flex items-center gap-1 rounded-md border bg-card px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400"
+                >
+                  <CheckCircle2 className="h-3 w-3" aria-hidden />
+                  Beworben
+                </button>
+              )}
               <button
                 type="button"
-                onClick={onBeworben}
-                title="Als beworben markieren"
-                className="inline-flex items-center gap-1 rounded-md border bg-card px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400"
+                onClick={onToggleGespeichert}
+                title={istGespeichert ? 'Aus Gespeicherten entfernen' : 'Speichern'}
+                className={cn(
+                  'inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors',
+                  istGespeichert
+                    ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
+                    : 'bg-card text-muted-foreground hover:border-cyan-500/40 hover:text-cyan-600 dark:hover:text-cyan-400'
+                )}
               >
-                <CheckCircle2 className="h-3 w-3" aria-hidden />
-                Beworben
+                {istGespeichert ? (
+                  <BookmarkCheck className="h-3.5 w-3.5" aria-hidden />
+                ) : (
+                  <Bookmark className="h-3.5 w-3.5" aria-hidden />
+                )}
               </button>
-            )}
-            <button
-              type="button"
-              onClick={onToggleGespeichert}
-              title={istGespeichert ? 'Aus Gespeicherten entfernen' : 'Speichern'}
-              className={cn(
-                'inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors',
-                istGespeichert
-                  ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
-                  : 'bg-card text-muted-foreground hover:border-cyan-500/40 hover:text-cyan-600 dark:hover:text-cyan-400'
-              )}
-            >
-              {istGespeichert ? (
-                <BookmarkCheck className="h-3.5 w-3.5" aria-hidden />
-              ) : (
-                <Bookmark className="h-3.5 w-3.5" aria-hidden />
-              )}
-            </button>
+            </div>
           </div>
         </div>
       </div>

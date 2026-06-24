@@ -5,9 +5,11 @@ Felder auf das generische `RohStellenanzeige`-Modell.
 """
 from __future__ import annotations
 
+import re
 import time
 from datetime import datetime, timezone
 from typing import Any, Iterator, List, Optional
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -105,15 +107,24 @@ class AdzunaClient(BasisQuelleClient):
 
         return aufrufen()
 
-    @staticmethod
-    def _datum_parsen(wert: Any) -> Optional[datetime]:
+    _BERLIN = ZoneInfo("Europe/Berlin")
+    _TZ_SUFFIX = re.compile(r"Z$|[+-]\d{2}:?\d{2}$")
+
+    @classmethod
+    def _datum_parsen(cls, wert: Any) -> Optional[datetime]:
         if not wert:
             return None
         if isinstance(wert, datetime):
-            return wert if wert.tzinfo else wert.replace(tzinfo=timezone.utc)
+            if wert.tzinfo:
+                return wert.astimezone(timezone.utc)
+            return wert.replace(tzinfo=cls._BERLIN).astimezone(timezone.utc)
         if isinstance(wert, str):
             try:
-                return datetime.fromisoformat(wert.replace("Z", "+00:00"))
+                # Adzuna liefert Berliner Lokalzeit mit falschem Z-Suffix.
+                # Timezone-Marker entfernen, dann als Europe/Berlin interpretieren
+                # und korrekt nach UTC umrechnen.
+                naive = datetime.fromisoformat(cls._TZ_SUFFIX.sub("", wert))
+                return naive.replace(tzinfo=cls._BERLIN).astimezone(timezone.utc)
             except ValueError:
                 return None
         return None

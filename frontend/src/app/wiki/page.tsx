@@ -94,7 +94,7 @@ export default function WikiSeite() {
             'Klicken Sie auf den Titel, um die Original-Anzeige direkt zu oeffnen.',
             'Mit "Beworben" verschieben Sie eine gespeicherte Anzeige in den Bereich "Beworben".',
             'Mit dem Papierkorb-Symbol entfernen Sie eine Anzeige vollstaendig aus dem lokalen Speicher.',
-            'Alle Daten liegen ausschliesslich in Ihrem Browser (LocalStorage). Sie werden nicht uebertragen oder synchronisiert.',
+            'Ohne Profil liegen alle Daten ausschliesslich in Ihrem Browser (LocalStorage). Mit einem Profil (siehe Anleitung "Profil und geraeteuebergreifender Verlauf") werden sie geraeteuebergreifend synchronisiert.',
             'Hinweis: Da Anzeigen bei den Quellen jederzeit ablaufen koennen, empfehlen wir, sich zeitnah zu bewerben.',
           ]}
         />

@@ -86,7 +86,6 @@ export function useNutzerProfil() {
       }
       const fusioniert = JSON.stringify(lokal);
       localStorage.setItem(SPEICHER_SCHLUESSEL, fusioniert);
-      letzterHash.current = fusioniert;
       window.dispatchEvent(new StorageEvent('storage', { key: SPEICHER_SCHLUESSEL }));
       setSyncStatus('ok');
       return true;

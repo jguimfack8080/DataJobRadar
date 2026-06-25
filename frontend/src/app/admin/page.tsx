@@ -47,7 +47,7 @@ interface Stats {
   top_isps: Eintrag[];
   status_verteilung: Eintrag[];
   geraete: Eintrag[];
-  letzte_besuche: Besuch[];
+  alle_besuche: Besuch[];
 }
 
 function kuerzenDatum(tag: string): string {
@@ -187,6 +187,7 @@ export default function AdminSeite() {
   const [laden, setLaden] = useState(false);
   const [fehler, setFehler] = useState('');
   const [letzteAktualisierung, setLetzteAktualisierung] = useState('');
+  const [suchbegriff, setSuchbegriff] = useState('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -570,82 +571,114 @@ export default function AdminSeite() {
           </section>
 
           <section>
-            <div className="rounded-xl border bg-card shadow-card">
-              <div className="border-b px-5 py-4">
-                <h2 className="text-sm font-semibold">Letzte Besuche</h2>
-                <p className="text-xs text-muted-foreground">
-                  Die {stats.letzte_besuche.length} aktuellsten Aufrufe
-                </p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b bg-muted/30 text-left text-muted-foreground">
-                      <th className="px-4 py-3 font-medium">Zeitpunkt</th>
-                      <th className="px-4 py-3 font-medium">IP</th>
-                      <th className="px-4 py-3 font-medium">Standort</th>
-                      <th className="px-4 py-3 font-medium">Seite</th>
-                      <th className="px-4 py-3 font-medium">Status</th>
-                      <th className="px-4 py-3 font-medium">Geraet</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.letzte_besuche.map((b, i) => {
-                      const geoTeile = b.geo.split('|').map((s) => s.trim());
-                      const land = geoTeile[0] ?? '';
-                      const stadt = geoTeile[1] ?? '';
-                      const isp = geoTeile[2] ?? '';
-                      const status = parseInt(b.status, 10);
-                      const statusKlasse =
-                        status >= 500
-                          ? 'text-red-500'
-                          : status >= 400
-                          ? 'text-yellow-500'
-                          : status >= 300
-                          ? 'text-blue-500'
-                          : 'text-green-500';
-                      return (
-                        <tr
-                          key={i}
-                          className="border-b last:border-0 transition-colors hover:bg-muted/20"
-                        >
-                          <td className="whitespace-nowrap px-4 py-2.5 tabular-nums text-muted-foreground">
-                            {b.zeitpunkt}
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-2.5 font-mono">{b.ip}</td>
-                          <td className="px-4 py-2.5">
-                            <span className="font-medium">{land}</span>
-                            {stadt && <span className="text-muted-foreground"> / {stadt}</span>}
-                            {isp && (
-                              <span
-                                className="block max-w-[140px] truncate text-muted-foreground/70"
-                                title={isp}
-                              >
-                                {isp}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-4 py-2.5">
-                            <span
-                              className="max-w-[200px] truncate block font-mono"
-                              title={b.pfad}
-                            >
-                              {b.pfad}
-                            </span>
-                          </td>
-                          <td className={`whitespace-nowrap px-4 py-2.5 font-medium ${statusKlasse}`}>
-                            {b.status}
-                          </td>
-                          <td className="max-w-[160px] truncate px-4 py-2.5 text-muted-foreground">
-                            {b.ua.length > 50 ? b.ua.slice(0, 50) + '...' : b.ua}
-                          </td>
+            {(() => {
+              const terme = suchbegriff.trim().toLowerCase();
+              const sichtbar = terme
+                ? stats.alle_besuche.filter(
+                    (b) =>
+                      b.ip.includes(terme) ||
+                      b.geo.toLowerCase().includes(terme) ||
+                      b.pfad.toLowerCase().includes(terme) ||
+                      b.status.includes(terme) ||
+                      b.ua.toLowerCase().includes(terme) ||
+                      b.referrer.toLowerCase().includes(terme)
+                  )
+                : stats.alle_besuche;
+              return (
+                <div className="rounded-xl border bg-card shadow-card">
+                  <div className="flex flex-col gap-3 border-b px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-sm font-semibold">Alle Besuche</h2>
+                      <p className="text-xs text-muted-foreground">
+                        {terme
+                          ? `${formatN(sichtbar.length)} von ${formatN(stats.alle_besuche.length)} Eintraegen`
+                          : `${formatN(stats.alle_besuche.length)} Eintraege gesamt`}
+                      </p>
+                    </div>
+                    <input
+                      type="text"
+                      value={suchbegriff}
+                      onChange={(e) => setSuchbegriff(e.target.value)}
+                      placeholder="Suche nach IP, Land, Seite, Status..."
+                      className="w-full rounded-lg border bg-background px-3 py-2 text-xs outline-none ring-accent/50 focus:ring-2 sm:w-72"
+                    />
+                  </div>
+                  <div className="max-h-[600px] overflow-auto">
+                    <table className="w-full text-xs">
+                      <thead className="sticky top-0 z-10">
+                        <tr className="border-b bg-card text-left text-muted-foreground">
+                          <th className="px-4 py-3 font-medium">Zeitpunkt</th>
+                          <th className="px-4 py-3 font-medium">IP</th>
+                          <th className="px-4 py-3 font-medium">Standort</th>
+                          <th className="px-4 py-3 font-medium">Seite</th>
+                          <th className="px-4 py-3 font-medium">Status</th>
+                          <th className="px-4 py-3 font-medium">Geraet</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      </thead>
+                      <tbody>
+                        {sichtbar.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                              Keine Eintraege gefunden.
+                            </td>
+                          </tr>
+                        ) : (
+                          sichtbar.map((b, i) => {
+                            const geoTeile = b.geo.split('|').map((s) => s.trim());
+                            const land = geoTeile[0] ?? '';
+                            const stadt = geoTeile[1] ?? '';
+                            const isp = geoTeile[2] ?? '';
+                            const status = parseInt(b.status, 10);
+                            const statusKlasse =
+                              status >= 500
+                                ? 'text-red-500'
+                                : status >= 400
+                                ? 'text-yellow-500'
+                                : status >= 300
+                                ? 'text-blue-500'
+                                : 'text-green-500';
+                            return (
+                              <tr
+                                key={i}
+                                className="border-b last:border-0 transition-colors hover:bg-muted/20"
+                              >
+                                <td className="whitespace-nowrap px-4 py-2.5 tabular-nums text-muted-foreground">
+                                  {b.zeitpunkt}
+                                </td>
+                                <td className="whitespace-nowrap px-4 py-2.5 font-mono">{b.ip}</td>
+                                <td className="px-4 py-2.5">
+                                  <span className="font-medium">{land}</span>
+                                  {stadt && <span className="text-muted-foreground"> / {stadt}</span>}
+                                  {isp && (
+                                    <span
+                                      className="block max-w-[140px] truncate text-muted-foreground/70"
+                                      title={isp}
+                                    >
+                                      {isp}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2.5">
+                                  <span className="block max-w-[200px] truncate font-mono" title={b.pfad}>
+                                    {b.pfad}
+                                  </span>
+                                </td>
+                                <td className={`whitespace-nowrap px-4 py-2.5 font-medium ${statusKlasse}`}>
+                                  {b.status}
+                                </td>
+                                <td className="max-w-[160px] truncate px-4 py-2.5 text-muted-foreground">
+                                  {b.ua.length > 50 ? b.ua.slice(0, 50) + '...' : b.ua}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })()}
           </section>
         </>
       )}

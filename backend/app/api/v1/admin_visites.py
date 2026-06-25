@@ -144,7 +144,7 @@ def visites_stats(
     def top(c: Counter, n: int = 10) -> list[dict[str, Any]]:
         return [{"name": k, "anzahl": v} for k, v in c.most_common(n)]
 
-    letzte = list(reversed(eintraege[-50:]))
+    alle_besuche = list(reversed(eintraege))
 
     return JSONResponse({
         "gesamt": gesamt,
@@ -160,5 +160,5 @@ def visites_stats(
         "top_isps": top(isps_zaehler),
         "status_verteilung": top(status_zaehler, 20),
         "geraete": top(ua_zaehler),
-        "letzte_besuche": letzte[:30],
+        "alle_besuche": alle_besuche,
     })

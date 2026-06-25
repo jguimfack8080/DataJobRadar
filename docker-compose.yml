@@ -39,6 +39,10 @@ x-airflow-common: &airflow-common
     AIRFLOW__SMTP__SMTP_PASSWORD: ${SMTP_PASSWORD:-}
     AIRFLOW__SMTP__SMTP_PORT: ${SMTP_PORT:-587}
     AIRFLOW__SMTP__SMTP_MAIL_FROM: ${SMTP_MAIL_FROM:-}
+  ulimits:
+    nofile:
+      soft: 65536
+      hard: 65536
   volumes:
     - ./orchestration/dags:/opt/airflow/dags:ro
     - ./shared/python/djr_core/djr_core:/opt/airflow/djr_core:ro

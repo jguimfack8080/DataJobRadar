@@ -55,6 +55,7 @@ class SilverTransformator:
         try:
             verbindung.execute("SET memory_limit='512MB'")
             verbindung.execute("SET threads=2")
+            verbindung.execute("SET max_expression_depth=1000")
             self._funktionen_registrieren(verbindung)
             kategorie_filter = self._kategorie_filter(kategorien)
             abfrage = self._silver_abfrage(bronze_glob, kategorie_filter)
@@ -62,8 +63,17 @@ class SilverTransformator:
                 f"COPY ({abfrage.rstrip().rstrip(';')}) TO '{ziel}' "
                 "(FORMAT 'parquet', COMPRESSION 'zstd', ROW_GROUP_SIZE 100000)"
             )
+        except Exception:
+            try:
+                verbindung.interrupt()
+            except Exception:
+                pass
+            raise
         finally:
-            verbindung.close()
+            try:
+                verbindung.close()
+            except Exception:
+                pass
 
         _logger.info(
             "silver_geschrieben",

@@ -60,8 +60,10 @@ export default function WikiSeite() {
           zweck="Konkrete Stellen suchen, speichern und direkt zur Original-Anzeige springen."
           schritte={[
             'Geben Sie oben einen Suchbegriff ein (Titel oder Unternehmen) und klicken Sie "Filter anwenden".',
+            'Das Unternehmen- und das Stadt-Feld unterstuetzen Teilsuche: "SAP", "sap" und "sa" liefern alle SAP-Stellen. Gross-/Kleinschreibung spielt keine Rolle.',
             'Direkt unter den Eingabefeldern koennen Sie die Datenquellen auswaehlen (Bundesagentur, Adzuna, Arbeitnow, Jooble, JSearch, The Muse, Remotive, Jobicy, RemoteOK). Mehrfachauswahl, ODER-Verknuepfung.',
             'Mit "Mehr Filter" oeffnen Sie die volle Filtersuite: Bundesland, Kategorie, Vertragstyp, Vertragszeit, Gehaltsspanne, Datumsbereich, Skills.',
+            'Die Checkbox "Nur Remote-Stellen" filtert ausschliesslich auf 100%-Remote-Positionen, unabhaengig vom Land des Arbeitgebers.',
             'Skills sind Mehrfachauswahl mit UND-Verknuepfung: Wer "Python" und "AWS" anklickt, sieht nur Anzeigen mit beiden.',
             'Klicken Sie den Titel einer Anzeige an, um sie bei der jeweiligen Quelle in einem neuen Tab zu oeffnen. Die Anzeige erhaelt danach das Badge "Gesehen" (grau).',
             'Swipe nach rechts auf einer Karte (Touch oder Maus), um sie sofort als Beworben zu markieren. Ein gruener Hintergrund erscheint waehrend der Geste und bestaetigt die Aktion.',
@@ -281,7 +283,8 @@ export default function WikiSeite() {
           <li>Manche Anzeigen enthalten kein Gehalt; diese tauchen in den Gehaltsstatistiken nicht auf.</li>
           <li>Die Skill-Erkennung ist regelbasiert und kann gelegentlich Fehltreffer produzieren (zum Beispiel "R" als Programmiersprache erkennen, obwohl in der Anzeige nur ein Buchstabe gemeint ist).</li>
           <li>Sehr kleine Orte erscheinen oft als "Deutschland", weil die Original-Anzeige keine genauere Angabe enthaelt.</li>
-          <li>Es werden Stellen aus den neun integrierten Quellen beruecksichtigt; bei Remote-Boersen (Remotive, Jobicy, RemoteOK, The Muse) wird zusaetzlich auf Standorte Germany, Europe, EU, EMEA, Worldwide oder Anywhere gefiltert. Jooble und JSearch unterliegen Kontingentgrenzen; bei Erschoepfung wird eine E-Mail-Benachrichtigung an den Administrator gesendet.</li>
+          <li>Es werden Stellen aus den neun integrierten Quellen beruecksichtigt. Remote-Stellen werden aus allen Quellen ohne Laenderbeschraenkung uebernommen; dedizierte Remote-Boersen (Remotive, Jobicy, RemoteOK) liefern ausschliesslich Remote-Positionen. Jooble und JSearch unterliegen Kontingentgrenzen; bei Erschoepfung wird eine E-Mail-Benachrichtigung an den Administrator gesendet.</li>
+          <li>Der Filter "Nur Remote-Stellen" zeigt ausschliesslich Anzeigen, bei denen die Quelle Remote explizit angegeben hat. Anzeigen ohne klare Remote-Angabe erscheinen auch dann nicht, wenn Remote moeglicherweise verhandelbar ist.</li>
         </ul>
       </KapitelKarte>
 

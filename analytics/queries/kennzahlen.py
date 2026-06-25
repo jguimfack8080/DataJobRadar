@@ -28,6 +28,7 @@ class JobsFilter:
     gehalt_min: Optional[float] = None
     gehalt_max: Optional[float] = None
     nur_mit_gehalt: bool = False
+    nur_remote: bool = False
     veroeffentlicht_seit: Optional[str] = None
     veroeffentlicht_bis: Optional[str] = None
     skills: List[str] = field(default_factory=list)
@@ -48,16 +49,16 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
         parameter.extend([muster, muster])
 
     if filter.stadt:
-        bedingungen.append("LOWER(s.stadt) = ?")
-        parameter.append(filter.stadt.lower())
+        bedingungen.append("LOWER(s.stadt) LIKE ?")
+        parameter.append(f"%{filter.stadt.lower()}%")
 
     if filter.bundesland:
         bedingungen.append("LOWER(s.bundesland) = ?")
         parameter.append(filter.bundesland.lower())
 
     if filter.unternehmen:
-        bedingungen.append("LOWER(d.unternehmen_normalisiert) = ?")
-        parameter.append(filter.unternehmen.lower())
+        bedingungen.append("LOWER(d.unternehmen_normalisiert) LIKE ?")
+        parameter.append(f"%{filter.unternehmen.lower()}%")
 
     if filter.kategorie:
         bedingungen.append("LOWER(f.kategorie) = ?")
@@ -85,6 +86,9 @@ def abfrage_jobs_seite(engine: DuckDBEngine, filter: JobsFilter) -> List[dict[st
 
     if filter.nur_mit_gehalt:
         bedingungen.append("f.gehalt_mittel IS NOT NULL")
+
+    if filter.nur_remote:
+        bedingungen.append("s.region = 'Remote'")
 
     if filter.veroeffentlicht_seit:
         bedingungen.append("f.veroeffentlicht_am >= CAST(? AS TIMESTAMP)")

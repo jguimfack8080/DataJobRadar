@@ -39,6 +39,8 @@ function filterAusUrl(params: URLSearchParams): FilterZustand {
   if (gmax) aus.gehalt_max = Number(gmax);
   const mitGehalt = params.get('nur_mit_gehalt');
   if (mitGehalt === 'true' || mitGehalt === '1') aus.nur_mit_gehalt = true;
+  const nurRemote = params.get('nur_remote');
+  if (nurRemote === 'true' || nurRemote === '1') aus.nur_remote = true;
   const skills = params.getAll('skill');
   if (skills.length > 0) aus.skill = skills;
   const quellen = params.getAll('quelle');
@@ -349,6 +351,18 @@ function AnzeigenInhalt() {
                         }
                       />
                       <span>Anzeigen ohne Gehalt ausblenden</span>
+                    </label>
+                  </Feld>
+                  <Feld label="Arbeitsort">
+                    <label className="flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm shadow-card">
+                      <input
+                        type="checkbox"
+                        checked={entwurf.nur_remote ?? false}
+                        onChange={(e) =>
+                          setEntwurf((alt) => ({ ...alt, nur_remote: e.target.checked }))
+                        }
+                      />
+                      <span>Nur Remote-Stellen</span>
                     </label>
                   </Feld>
                 </div>

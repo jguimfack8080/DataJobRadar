@@ -144,6 +144,7 @@ export interface JobsFilter {
   gehalt_min?: number;
   gehalt_max?: number;
   nur_mit_gehalt?: boolean;
+  nur_remote?: boolean;
   veroeffentlicht_seit?: string;
   veroeffentlicht_bis?: string;
   skill?: string[];

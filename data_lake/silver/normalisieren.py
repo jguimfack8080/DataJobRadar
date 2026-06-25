@@ -123,6 +123,20 @@ class SilverTransformator:
             )
             WHERE rang_intra = 1
         ),
+        intra_titel_dedup AS (
+            SELECT *
+            FROM (
+                SELECT *,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY quelle,
+                                        LOWER(TRIM(titel)),
+                                        LOWER(TRIM(COALESCE(unternehmen, '')))
+                           ORDER BY abruf_zeitpunkt DESC
+                       ) AS rang_titel
+                FROM intra_dedup
+            )
+            WHERE rang_titel = 1
+        ),
         cross_dedup AS (
             SELECT *
             FROM (
@@ -131,7 +145,7 @@ class SilverTransformator:
                            PARTITION BY dedup_signatur
                            ORDER BY quellen_prioritaet DESC, abruf_zeitpunkt DESC
                        ) AS rang_cross
-                FROM intra_dedup
+                FROM intra_titel_dedup
             )
             WHERE rang_cross = 1
         )

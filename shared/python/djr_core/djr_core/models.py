@@ -62,10 +62,14 @@ def job_id_berechnen(quelle: JobQuelle, quell_id: str) -> str:
 
 
 def dedup_signatur_berechnen(
-    titel: str, unternehmen: Optional[str], stadt: Optional[str]
+    titel: str, unternehmen: Optional[str], stadt: Optional[str] = None
 ) -> str:
-    """Cross-Source-Schluessel zum Erkennen derselben Stelle in verschiedenen Quellen."""
-    teile = "|".join([_normalisiere(titel), _normalisiere(unternehmen), _normalisiere(stadt)])
+    """Cross-Source-Schluessel zum Erkennen derselben Stelle in verschiedenen Quellen.
+
+    Bewusst ohne Stadt: derselbe Jobtitel beim selben Unternehmen zaehlt als Duplikat,
+    auch wenn der Aggregator ihn fuer mehrere Staedte separat publiziert hat.
+    """
+    teile = "|".join([_normalisiere(titel), _normalisiere(unternehmen)])
     return hashlib.sha256(teile.encode("utf-8")).hexdigest()[:24]
 
 

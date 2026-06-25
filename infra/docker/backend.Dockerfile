@@ -35,7 +35,8 @@ COPY analytics /app/analytics
 COPY backend /app/backend
 COPY --from=frontend-build /build/out /app/frontend_static
 RUN useradd --system --uid 1000 djr \
- && chown -R djr:djr /app
+ && chown -R djr:djr /app \
+ && mkdir -p /data/logs && chown djr:djr /data/logs
 USER djr
 EXPOSE 8081
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

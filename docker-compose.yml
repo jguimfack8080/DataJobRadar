@@ -157,6 +157,7 @@ services:
       - djr-lake:/data/lake:ro
       - djr-warehouse:/data/warehouse:ro
       - djr-userdata:/data/userdata
+      - djr-logs:/data/logs
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8081}:8081"
     healthcheck:
@@ -176,3 +177,4 @@ volumes:
   djr-lake:
   djr-warehouse:
   djr-userdata:
+  djr-logs:

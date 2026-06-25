@@ -16,7 +16,7 @@ from djr_core import configure_logging, get_logger, get_settings
 from backend.app.api.v1.router import router as v1_router
 from backend.app.core.cache import resultcache_leeren
 from backend.app.core.errors import fehlerbehandler_registrieren
-from backend.app.core.middleware import KorrelationsMiddleware, RateLimitMiddleware
+from backend.app.core.middleware import BesucherMiddleware, KorrelationsMiddleware, RateLimitMiddleware
 
 
 _logger = get_logger("backend.main")
@@ -57,6 +57,7 @@ def app_erzeugen() -> FastAPI:
         allow_headers=["*"],
     )
     app.add_middleware(GZipMiddleware, minimum_size=1024)
+    app.add_middleware(BesucherMiddleware)
     app.add_middleware(KorrelationsMiddleware)
     app.add_middleware(
         RateLimitMiddleware,

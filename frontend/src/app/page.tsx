@@ -7,6 +7,7 @@ import { LeererZustand } from '@/components/ui/leerer-zustand';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BalkenDiagramm } from '@/components/charts/balken-diagramm';
 import { LinienDiagramm } from '@/components/charts/linien-diagramm';
+import { QuellenStatus } from '@/components/quellen/quellen-status';
 import { useApi } from '@/hooks/use-api';
 import { formatGehalt, formatZahl } from '@/lib/utils';
 import type {
@@ -174,6 +175,14 @@ export default function UebersichtSeite() {
                 ))}
               </ul>
             </Liste>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section>
+        <Card>
+          <CardContent className="p-5">
+            <QuellenStatus />
           </CardContent>
         </Card>
       </section>

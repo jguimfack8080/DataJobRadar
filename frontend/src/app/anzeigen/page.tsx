@@ -484,7 +484,7 @@ function AnzeigenInhalt() {
                       status={speicher.getStatus(job.kennung)}
                       onGesehen={() => speicher.markiereGesehen(job)}
                       onToggleGespeichert={() => speicher.toggleGespeichert(job)}
-                      onBeworben={() => speicher.setzeBeworben(job)}
+                      onBeworben={() => speicher.toggleBeworben(job)}
                     />
                   </li>
                 ))}
@@ -619,7 +619,7 @@ function JobKarte({ job, status, onGesehen, onToggleGespeichert, onBeworben }: J
 
   return (
     <div className="relative overflow-hidden rounded-md select-none">
-      {/* Swipe-rechts Hintergrund: Beworben */}
+      {/* Swipe-rechts Hintergrund: Beworben toggle */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 flex items-center rounded-md bg-emerald-500/10 pl-5"
@@ -633,8 +633,10 @@ function JobKarte({ job, status, onGesehen, onToggleGespeichert, onBeworben }: J
             filter: passiertSchwelleRechts ? 'brightness(1.15)' : 'none',
           }}
         >
-          <CheckCircle2 className="h-6 w-6" aria-hidden />
-          <span className="text-sm font-semibold">Beworben</span>
+          {istBeworben
+            ? <><CheckCircle2 className="h-6 w-6" aria-hidden /><span className="text-sm font-semibold">Entfernen</span></>
+            : <><CheckCircle2 className="h-6 w-6" aria-hidden /><span className="text-sm font-semibold">Beworben</span></>
+          }
         </div>
       </div>
 

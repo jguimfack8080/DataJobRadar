@@ -19,8 +19,15 @@ x-airflow-common: &airflow-common
     ADZUNA_APP_ID: ${ADZUNA_APP_ID}
     ADZUNA_APP_KEY: ${ADZUNA_APP_KEY}
     ADZUNA_COUNTRY: ${ADZUNA_COUNTRY:-de}
+    JOOBLE_API_KEY: ${JOOBLE_API_KEY:-}
+    JOOBLE_QUOTA_GRENZE: ${JOOBLE_QUOTA_GRENZE:-500}
+    RAPIDAPI_KEY: ${RAPIDAPI_KEY:-}
+    JSEARCH_QUOTA_GRENZE: ${JSEARCH_QUOTA_GRENZE:-200}
+    QUOTA_ALERT_EMAIL: ${QUOTA_ALERT_EMAIL:-jeunaj3@gmail.com}
     DATA_LAKE_ROOT: /data/lake
     DUCKDB_PATH: /data/warehouse/djr.duckdb
+    QUELLEN_STATUS_PFAD: /data/warehouse/quellen_status.json
+    QUOTA_DB_PATH: /data/warehouse/quota.db
     LOG_FORMAT: ${LOG_FORMAT:-json}
     LOG_LEVEL: ${LOG_LEVEL:-INFO}
     AIRFLOW__SMTP__SMTP_HOST: ${SMTP_HOST:-}
@@ -141,6 +148,7 @@ services:
       USER_DATA_PATH: /data/userdata/nutzer.db
       DATA_LAKE_ROOT: /data/lake
       DUCKDB_PATH: /data/warehouse/djr.duckdb
+      QUELLEN_STATUS_PFAD: /data/warehouse/quellen_status.json
       LOG_FORMAT: ${LOG_FORMAT:-json}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:

@@ -64,10 +64,38 @@ export const endpunkte = {
 export const QUELLEN_BESCHRIFTUNG: Record<string, string> = {
   bundesagentur: 'Bundesagentur f. Arbeit',
   adzuna: 'Adzuna',
+  arbeitnow: 'Arbeitnow',
+  jooble: 'Jooble',
+  jsearch: 'JSearch',
   muse: 'The Muse',
   remotive: 'Remotive',
   jobicy: 'Jobicy',
+  remoteok: 'RemoteOK',
 };
+
+export interface QuotaInfo {
+  verbraucht: number;
+  grenze: number;
+  prozent: number;
+  monatlich: boolean;
+  reset_datum: string | null;
+}
+
+export interface QuelleStatusEintrag {
+  name: string;
+  bezeichnung: string;
+  geladen: number;
+  gueltig: number;
+  quarantaene: number;
+  abgebrochen: boolean;
+  abbruchgrund: string | null;
+  quota: QuotaInfo | null;
+}
+
+export interface QuellenStatusAntwort {
+  zeitstempel: string | null;
+  quellen: QuelleStatusEintrag[];
+}
 
 export interface KennzahlenGesamt {
   anzahl_jobs: number;

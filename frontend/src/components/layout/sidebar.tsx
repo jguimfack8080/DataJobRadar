@@ -29,7 +29,7 @@ const navigation = [
   { name: 'Wiki', href: '/wiki', icon: BookOpen },
 ];
 
-const QUELLEN = ['Bundesagentur f. Arbeit', 'Adzuna', 'The Muse', 'Remotive', 'Jobicy'];
+const QUELLEN = ['Bundesagentur f. Arbeit', 'Adzuna', 'Arbeitnow', 'Jooble', 'JSearch', 'The Muse', 'Remotive', 'Jobicy', 'RemoteOK'];
 
 export function Sidebar() {
   const pfad = usePathname();

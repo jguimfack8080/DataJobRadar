@@ -20,17 +20,25 @@ class JobQuelle(str, Enum):
 
     BUNDESAGENTUR = "bundesagentur"
     ADZUNA = "adzuna"
+    ARBEITNOW = "arbeitnow"
+    JOOBLE = "jooble"
+    JSEARCH = "jsearch"
     MUSE = "muse"
     REMOTIVE = "remotive"
     JOBICY = "jobicy"
+    REMOTEOK = "remoteok"
 
 
 QUELLEN_PRIORITAET: dict[JobQuelle, int] = {
     JobQuelle.BUNDESAGENTUR: 100,
     JobQuelle.ADZUNA: 90,
+    JobQuelle.ARBEITNOW: 85,
+    JobQuelle.JOOBLE: 75,
+    JobQuelle.JSEARCH: 65,
     JobQuelle.MUSE: 70,
     JobQuelle.REMOTIVE: 60,
     JobQuelle.JOBICY: 50,
+    JobQuelle.REMOTEOK: 45,
 }
 
 

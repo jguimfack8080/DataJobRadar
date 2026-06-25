@@ -133,6 +133,28 @@ export function useJobSpeicher() {
     []
   );
 
+  const toggleBeworben = useCallback(
+    (job: Job) => {
+      setSpeicher((aktuell) => {
+        const eintrag = aktuell[job.kennung];
+        const hatBeworben = eintrag?.status.includes('beworben') ?? false;
+        const neuerStatus: JobStatus[] = hatBeworben
+          ? (eintrag?.status ?? []).filter((s) => s !== 'beworben')
+          : Array.from(new Set([...(eintrag?.status ?? []), 'gespeichert', 'beworben']));
+        const naechster: Speicher = {
+          ...aktuell,
+          [job.kennung]: {
+            status: neuerStatus,
+            snapshot: eintrag?.snapshot ?? jobSnapshot(job),
+          },
+        };
+        schreiben(naechster);
+        return naechster;
+      });
+    },
+    []
+  );
+
   const entfernen = useCallback(
     (kennung: string) => {
       setSpeicher((aktuell) => {
@@ -178,6 +200,7 @@ export function useJobSpeicher() {
   return {
     markiereGesehen,
     toggleGespeichert,
+    toggleBeworben,
     setzeBeworben,
     entfernen,
     getStatus,

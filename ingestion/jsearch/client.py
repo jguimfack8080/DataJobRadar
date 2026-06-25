@@ -2,7 +2,8 @@
 
 Aggregiert Google for Jobs, LinkedIn, Indeed, Glassdoor.
 Monatliches Limit: 200 Anfragen/Monat (Free Plan).
-Alert bei 80% (160 Anfragen). Eine Query pro Pipeline-Lauf.
+Alert bei 80% (160 Anfragen). Drei Queries pro Lauf (je 1 API-Call).
+num_pages=5 liefert 50 Ergebnisse pro API-Call ohne Mehrkosten.
 """
 from __future__ import annotations
 
@@ -23,7 +24,7 @@ _logger = get_logger("ingestion.jsearch.client")
 
 _RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY", "")
 _GRENZE = int(os.getenv("JSEARCH_QUOTA_GRENZE", "200"))
-_BASIS_URL = "https://jsearch.p.rapidapi.com/search"
+_BASIS_URL = "https://jsearch.p.rapidapi.com/search-v2"
 
 _HEADERS = {
     "x-rapidapi-host": "jsearch.p.rapidapi.com",
@@ -35,9 +36,10 @@ _HEADERS = {
 class JsearchClient(BasisQuelleClient):
     quelle = JobQuelle.JSEARCH
 
-    # Eine einzige breite Suche pro Lauf um Budget zu schonen (120 Laeufe/Monat < 200)
     STANDARD_ANFRAGEN = (
-        Suchanfrage("it_germany", "data OR backend OR cloud engineer Germany", "IT Stellen Deutschland (JSearch)"),
+        Suchanfrage("it_dev_de", "software developer engineer", "Software Stellen Deutschland (JSearch)"),
+        Suchanfrage("data_de", "data scientist analyst engineer", "Data Stellen Deutschland (JSearch)"),
+        Suchanfrage("informatik_de", "informatik IT systems architect", "Informatik Stellen Deutschland (JSearch)"),
     )
 
     def __init__(self, **kwargs: Any) -> None:
@@ -72,9 +74,9 @@ class JsearchClient(BasisQuelleClient):
                 kontext={"grenze": _GRENZE, **self._quota.stand()},
             )
 
-        # Max 1 Seite pro Lauf (je Lauf = 1 API-Request)
+        # 1 API-Call pro Query; num_pages=5 liefert bis zu 50 Ergebnisse
         daten = self._abrufen(query=anfrage.query, seite=startseite)
-        jobs = daten.get("data") or []
+        jobs = daten.get("data", {}).get("jobs", [])
 
         anzeigen: List[RohStellenanzeige] = []
         for roh in jobs:
@@ -103,12 +105,18 @@ class JsearchClient(BasisQuelleClient):
                 params={
                     "query": query,
                     "page": str(seite),
-                    "num_pages": "1",
+                    "num_pages": "5",
                     "country": "de",
-                    "language": "de",
+                    "date_posted": "all",
                 },
                 headers=headers,
             )
+            if antwort.status_code == 404:
+                _logger.warning(
+                    "jsearch_endpoint_nicht_verfuegbar",
+                    extra={"antwort": antwort.text[:200]},
+                )
+                return {"data": {"jobs": []}}
             self._quota.hinzufuegen(1)
             return self._antwort_verarbeiten(
                 antwort, kontext={"quelle": "jsearch", "query": query, "seite": seite}
@@ -129,9 +137,6 @@ class JsearchClient(BasisQuelleClient):
         quell_id = roh.get("job_id")
         titel = roh.get("job_title")
         if not quell_id or not titel:
-            return None
-        land = (roh.get("job_country") or "").upper()
-        if land and land not in ("DE", "GERMANY", "DEU", ""):
             return None
         return RohStellenanzeige(
             quelle=self.quelle,

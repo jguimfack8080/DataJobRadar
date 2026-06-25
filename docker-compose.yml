@@ -2,9 +2,11 @@ name: data-job-radar
 
 # Topologie:
 # - "backend" laeuft auf 127.0.0.1:8081 und stellt API + statisches Frontend bereit.
-# - Host-Nginx proxyt von Port 80 (pgadmin.thetransporterlabs.de) auf 127.0.0.1:8081.
-# - "airflow" orchestriert die Pipeline; Webserver intern auf 8080.
+# - Host-Nginx proxyt von Port 80/443 (pgadmin.thetransporterlabs.de) auf 127.0.0.1:8081.
+# - "airflow-scheduler" orchestriert die 9-Quellen-Pipeline; Webserver intern auf 8080.
 # - "postgres" speichert ausschliesslich Airflow-Metadaten (kein Anwendungs-DB).
+# - Quellen-Status (/data/warehouse/quellen_status.json) wird vom Scheduler geschrieben,
+#   vom Backend gelesen (read-only Mount).
 
 x-airflow-common: &airflow-common
   build:

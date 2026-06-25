@@ -16,18 +16,18 @@ export default function WikiSeite() {
           Data Job Radar Deutschland
         </h1>
         <p className="text-base text-muted-foreground">
-          Ein Live-Marktradar fuer IT- und Data-Stellen in Deutschland. Mehrere Quellen
-          - die offizielle Bundesagentur fuer Arbeit, Adzuna, The Muse, Remotive und Jobicy
-          - werden zusammengefuehrt und auf Duplikate bereinigt. Sie sehen aktualisierte
-          Statistiken zum Stellenmarkt: wer einstellt, was bezahlt wird, welche Skills
-          gefragt sind und wo die Stellen verteilt sind.
+          Ein Live-Marktradar fuer IT- und Data-Stellen in Deutschland. Neun Quellen
+          - Bundesagentur fuer Arbeit, Adzuna, Arbeitnow, Jooble, JSearch, The Muse,
+          Remotive, Jobicy und RemoteOK - werden zusammengefuehrt und auf Duplikate
+          bereinigt. Sie sehen aktualisierte Statistiken zum Stellenmarkt: wer einstellt,
+          was bezahlt wird, welche Skills gefragt sind und wo die Stellen verteilt sind.
         </p>
       </header>
 
       <KapitelKarte titel="Was ist das hier in einem Satz?">
         <p>
           Diese Seite sammelt mehrmals pro Tag automatisch alle relevanten IT- und
-          Data-Stellenanzeigen aus fuenf Quellen, bereinigt sie Cross-Source und zeigt Ihnen die
+          Data-Stellenanzeigen aus neun Quellen, bereinigt sie Cross-Source und zeigt Ihnen die
           Trends, Top-Arbeitgeber, gefragtesten Skills und
           marktueblichen Gehaelter auf einen Blick.
         </p>
@@ -52,6 +52,7 @@ export default function WikiSeite() {
             'Das Liniendiagramm zeigt, wie viele neue Anzeigen in den letzten 30 Tagen veroeffentlicht wurden.',
             'Das Balkendiagramm "Top Skills" zeigt die haeufigsten Anforderungen.',
             'Die beiden unteren Listen zeigen die staerksten Staedte und Unternehmen.',
+            'Am unteren Seitenrand zeigt das Panel "Datenquellen" in Echtzeit, welche der neun Quellen im letzten Pipeline-Lauf Daten geliefert haben, wie viele gueltige Anzeigen je Quelle geladen wurden und - soweit vorhanden - wie viel des API-Kontingents verbraucht ist. Das Panel aktualisiert sich automatisch alle 60 Sekunden.',
           ]}
         />
         <Anleitung
@@ -59,7 +60,7 @@ export default function WikiSeite() {
           zweck="Konkrete Stellen suchen, speichern und direkt zur Original-Anzeige springen."
           schritte={[
             'Geben Sie oben einen Suchbegriff ein (Titel oder Unternehmen) und klicken Sie "Filter anwenden".',
-            'Direkt unter den Eingabefeldern koennen Sie die Datenquellen auswaehlen (Bundesagentur, Adzuna, The Muse, Remotive, Jobicy). Mehrfachauswahl, ODER-Verknuepfung.',
+            'Direkt unter den Eingabefeldern koennen Sie die Datenquellen auswaehlen (Bundesagentur, Adzuna, Arbeitnow, Jooble, JSearch, The Muse, Remotive, Jobicy, RemoteOK). Mehrfachauswahl, ODER-Verknuepfung.',
             'Mit "Mehr Filter" oeffnen Sie die volle Filtersuite: Bundesland, Kategorie, Vertragstyp, Vertragszeit, Gehaltsspanne, Datumsbereich, Skills.',
             'Skills sind Mehrfachauswahl mit UND-Verknuepfung: Wer "Python" und "AWS" anklickt, sieht nur Anzeigen mit beiden.',
             'Klicken Sie den Titel einer Anzeige an, um sie bei der jeweiligen Quelle in einem neuen Tab zu oeffnen. Die Anzeige erhaelt danach das Badge "Gesehen" (grau).',
@@ -134,7 +135,7 @@ export default function WikiSeite() {
 
       <KapitelKarte titel="Was bedeuten die Zahlen?">
         <ul className="space-y-2 text-sm">
-          <li><span className="font-medium text-foreground">Aktive Anzeigen:</span> Aktuelle Stellen aus allen fuenf Quellen mit Bezug zu Deutschland. Eine Stelle, die in mehreren Quellen oder mehrfach am Tag erscheint, wird nur einmal gezaehlt.</li>
+          <li><span className="font-medium text-foreground">Aktive Anzeigen:</span> Aktuelle Stellen aus allen neun Quellen mit Bezug zu Deutschland. Eine Stelle, die in mehreren Quellen oder mehrfach am Tag erscheint, wird nur einmal gezaehlt.</li>
           <li><span className="font-medium text-foreground">Gehalt:</span> Wenn die Anzeige eine Spanne hat, nehmen wir den Mittelwert. Steht nur ein Wert in der Anzeige, nutzen wir genau diesen. Ohne Angabe wird die Anzeige nicht in Gehaltsstatistiken einberechnet.</li>
           <li><span className="font-medium text-foreground">Skills:</span> Werden aus dem Beschreibungstext der Anzeige automatisch erkannt. Nicht jeder Skill, der vorkommt, wird zwingend als zwingende Anforderung verstanden.</li>
           <li><span className="font-medium text-foreground">Stadt und Bundesland:</span> Stammen aus den Geo-Angaben der Anzeige. Anzeigen ohne klare Ortsangabe landen in "Deutschland / unbekannt".</li>
@@ -153,7 +154,7 @@ export default function WikiSeite() {
 
       <KapitelKarte titel="Datenquellen und Lizenz">
         <p className="mb-3 text-sm">
-          Daten stammen aus fuenf oeffentlichen Quellen. Jede Stelle verlinkt direkt auf
+          Daten stammen aus neun oeffentlichen Quellen. Jede Stelle verlinkt direkt auf
           das Original bei der jeweiligen Quelle. Diese Seite ist kostenfrei nutzbar und
           gibt die Daten unveraendert wieder.
         </p>
@@ -180,6 +181,42 @@ export default function WikiSeite() {
               className="text-accent underline-offset-4 hover:underline"
             >
               developer.adzuna.com
+            </a>
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Arbeitnow</span> - europaeische
+            Jobboerse, kein API-Schlussel erforderlich.{' '}
+            <a
+              href="https://www.arbeitnow.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              arbeitnow.com
+            </a>
+          </li>
+          <li>
+            <span className="font-medium text-foreground">Jooble</span> - weltweite
+            Stellensuche, Fokus auf deutschsprachige Anzeigen. Kontingent: 500 Anfragen (Lifetime).{' '}
+            <a
+              href="https://jooble.org/api/about"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              jooble.org/api
+            </a>
+          </li>
+          <li>
+            <span className="font-medium text-foreground">JSearch (RapidAPI)</span> - breite
+            Aggregierung, gefiltert auf Deutschland. Kontingent: 200 Anfragen pro Monat.{' '}
+            <a
+              href="https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              rapidapi.com/jsearch
             </a>
           </li>
           <li>
@@ -218,11 +255,24 @@ export default function WikiSeite() {
               jobicy.com
             </a>
           </li>
+          <li>
+            <span className="font-medium text-foreground">RemoteOK</span> - Remote-Stellen,
+            kein API-Schlussel erforderlich.{' '}
+            <a
+              href="https://remoteok.com/api"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline-offset-4 hover:underline"
+            >
+              remoteok.com/api
+            </a>
+          </li>
         </ul>
         <p className="mt-3 text-xs text-muted-foreground">
           Cross-Source-Deduplizierung: erscheint dieselbe Stelle in mehreren Quellen, wird sie
           genau einmal angezeigt. Die Quelle mit der hoechsten Datenqualitaet wird behalten
-          (Reihenfolge: Bundesagentur, Adzuna, The Muse, Remotive, Jobicy).
+          (Reihenfolge: Bundesagentur, Adzuna, Arbeitnow, Jooble, The Muse, JSearch, Remotive,
+          Jobicy, RemoteOK).
         </p>
       </KapitelKarte>
 
@@ -231,15 +281,15 @@ export default function WikiSeite() {
           <li>Manche Anzeigen enthalten kein Gehalt; diese tauchen in den Gehaltsstatistiken nicht auf.</li>
           <li>Die Skill-Erkennung ist regelbasiert und kann gelegentlich Fehltreffer produzieren (zum Beispiel "R" als Programmiersprache erkennen, obwohl in der Anzeige nur ein Buchstabe gemeint ist).</li>
           <li>Sehr kleine Orte erscheinen oft als "Deutschland", weil die Original-Anzeige keine genauere Angabe enthaelt.</li>
-          <li>Es werden Stellen aus den fuenf integrierten Quellen beruecksichtigt; bei Remote-Boersen (Remotive, Jobicy, The Muse) wird zusaetzlich auf Standorte Germany, Europe, EU, EMEA, Worldwide oder Anywhere gefiltert.</li>
+          <li>Es werden Stellen aus den neun integrierten Quellen beruecksichtigt; bei Remote-Boersen (Remotive, Jobicy, RemoteOK, The Muse) wird zusaetzlich auf Standorte Germany, Europe, EU, EMEA, Worldwide oder Anywhere gefiltert. Jooble und JSearch unterliegen Kontingentgrenzen; bei Erschoepfung wird eine E-Mail-Benachrichtigung an den Administrator gesendet.</li>
         </ul>
       </KapitelKarte>
 
       <KapitelKarte titel="Wie die Daten verarbeitet werden">
         <Diagramm
           quelle="/diagramme/datenfluss.svg"
-          alt="Fuenf Quellen -> Ingestion -> Bronze -> Silver -> Gold -> API -> Dashboard"
-          beschriftung="Von fuenf Quellen bis zu diesem Dashboard: vier automatische Laeufe pro Tag mit Cross-Source-Deduplizierung."
+          alt="Neun Quellen -> Ingestion -> Bronze -> Silver -> Gold -> API -> Dashboard"
+          beschriftung="Von neun Quellen bis zu diesem Dashboard: vier automatische Laeufe pro Tag mit Cross-Source-Deduplizierung."
         />
       </KapitelKarte>
 

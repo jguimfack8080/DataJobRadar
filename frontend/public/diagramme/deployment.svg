@@ -15,21 +15,25 @@
   <text x="600" y="40" class="text mitte titel" font-size="20">Deployment-Topologie</text>
   <text x="600" y="64" class="text mitte sub">Ein extern erreichbarer Port. Frontend und API teilen sich denselben Container.</text>
 
+  <!-- AUSSEN -->
   <text x="60" y="130" class="text links gruppentitel">AUSSEN</text>
   <rect x="60" y="140" width="220" height="80" rx="10" class="knoten" />
   <text x="170" y="170" class="text mitte titel">Endnutzer</text>
   <text x="170" y="195" class="text mitte sub">Browser, HTTPS</text>
 
-  <text x="60" y="270" class="text links gruppentitel">EXTERN (DATENQUELLE)</text>
+  <!-- EXTERN (DATENQUELLEN) -->
+  <text x="60" y="270" class="text links gruppentitel">EXTERN (DATENQUELLEN)</text>
   <rect x="60" y="280" width="220" height="80" rx="10" class="knoten" />
-  <text x="170" y="310" class="text mitte titel">Adzuna API</text>
-  <text x="170" y="335" class="text mitte sub">HTTPS, Land: de</text>
+  <text x="170" y="308" class="text mitte titel">Externe APIs</text>
+  <text x="170" y="328" class="text mitte sub">Adzuna, Arbeitnow, Jooble, JSearch ...</text>
 
+  <!-- HOST (LINUX VPS) -->
   <text x="320" y="130" class="text links gruppentitel">HOST (LINUX VPS)</text>
   <rect x="320" y="140" width="220" height="80" rx="10" class="knoten" />
   <text x="430" y="170" class="text mitte titel">Host-Nginx</text>
   <text x="430" y="195" class="text mitte sub">TLS, Port 80 + 443</text>
 
+  <!-- DOCKER COMPOSE STACK -->
   <text x="580" y="130" class="text links gruppentitel">DOCKER COMPOSE STACK</text>
 
   <rect x="580" y="140" width="240" height="80" rx="10" class="knoten" />
@@ -48,6 +52,7 @@
   <text x="1000" y="310" class="text mitte titel">volume-permissions</text>
   <text x="1000" y="335" class="text mitte sub">Busybox, Init</text>
 
+  <!-- VOLUMES -->
   <text x="580" y="420" class="text links gruppentitel">VOLUMES</text>
   <rect x="580" y="440" width="240" height="80" rx="10" class="knoten" />
   <text x="700" y="470" class="text mitte titel">djr-lake</text>
@@ -55,8 +60,9 @@
 
   <rect x="860" y="440" width="280" height="80" rx="10" class="knoten" />
   <text x="1000" y="470" class="text mitte titel">djr-warehouse</text>
-  <text x="1000" y="495" class="text mitte sub">/data/warehouse (DuckDB)</text>
+  <text x="1000" y="495" class="text mitte sub">/data/warehouse (DuckDB, quellen_status)</text>
 
+  <!-- SICHERHEITSGRENZEN -->
   <text x="60" y="580" class="text links gruppentitel">SICHERHEITSGRENZEN</text>
   <rect x="60" y="600" width="500" height="130" rx="10" class="knoten" />
   <text x="80" y="630" class="text links sub">Backend bindet ausschliesslich an 127.0.0.1.</text>
@@ -64,6 +70,7 @@
   <text x="80" y="680" class="text links sub">Geheimnisse in .env (gitignored), niemals im Image.</text>
   <text x="80" y="705" class="text links sub">Rate Limit + CORS-Whitelist in der API.</text>
 
+  <!-- HEALTHCHECKS -->
   <text x="600" y="580" class="text links gruppentitel">HEALTHCHECKS</text>
   <rect x="600" y="600" width="540" height="130" rx="10" class="knoten" />
   <text x="620" y="630" class="text links sub">postgres: pg_isready</text>
@@ -71,20 +78,32 @@
   <text x="620" y="680" class="text links sub">airflow-webserver: GET /health</text>
   <text x="620" y="705" class="text links sub">airflow-scheduler: jobs check SchedulerJob</text>
 
+  <!-- PFEILE -->
+
+  <!-- Endnutzer -> Host-Nginx -->
   <path class="pfeil" d="M 280 180 L 320 180" marker-end="url(#pfd)" />
-  <path class="pfeil" d="M 540 180 L 580 180" marker-end="url(#pfd)" />
   <text x="295" y="160" class="text links sub">HTTPS</text>
+
+  <!-- Host-Nginx -> backend -->
+  <path class="pfeil" d="M 540 180 L 580 180" marker-end="url(#pfd)" />
   <text x="552" y="160" class="text links sub">proxy_pass</text>
 
-  <path class="pfeil" d="M 280 320 L 860 200" marker-end="url(#pfd)" />
-  <text x="500" y="245" class="text mitte sub">Adzuna-Aufrufe (Scheduler -&gt; extern)</text>
+  <!-- airflow-scheduler -> Externe APIs (L-foermig: runter dann links dann runter) -->
+  <path class="pfeil" d="M 1000 220 L 1000 254 L 280 254 L 280 280" marker-end="url(#pfd)" />
+  <text x="620" y="244" class="text mitte sub">API-Aufrufe (Scheduler -&gt; extern)</text>
 
+  <!-- airflow-scheduler -> postgres (SQL) -->
   <path class="pfeil" d="M 1000 220 L 820 280" marker-end="url(#pfd)" />
   <text x="935" y="245" class="text mitte sub">SQL</text>
 
-  <path class="pfeil" d="M 700 360 L 700 440" marker-end="url(#pfd)" />
-  <path class="pfeil" d="M 1000 360 L 1000 440" marker-end="url(#pfd)" />
+  <!-- backend -> postgres -->
   <path class="pfeil" d="M 700 220 L 700 280" marker-end="url(#pfd)" />
+
+  <!-- postgres -> djr-lake -->
+  <path class="pfeil" d="M 700 360 L 700 440" marker-end="url(#pfd)" />
+
+  <!-- volume-permissions -> djr-warehouse -->
+  <path class="pfeil" d="M 1000 360 L 1000 440" marker-end="url(#pfd)" />
 
   <defs>
     <marker id="pfd" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">

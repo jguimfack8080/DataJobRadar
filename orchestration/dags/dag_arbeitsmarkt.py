@@ -1,4 +1,4 @@
-"""Airflow-DAG: Adzuna -> Bronze -> Silver -> dbt Gold."""
+"""Airflow-DAG: 9 Quellen -> Bronze -> Silver -> dbt Gold."""
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -70,7 +70,7 @@ def _gold_initialisieren(**kontext: Any) -> dict[str, str]:
 with DAG(
     dag_id="arbeitsmarkt_data_pipeline",
     description=(
-        "Adzuna -> Bronze -> Silver -> dbt Gold (DuckDB). Laeuft viermal taeglich "
+        "9 Quellen -> Bronze -> Silver -> dbt Gold (DuckDB). Laeuft viermal taeglich "
         "(00:00 / 06:00 / 12:00 / 18:00 UTC). Mehrere Laeufe pro Tag erzeugen "
         "garantiert keine Duplikate (Silver-Dedup, Staging-Dedup, dbt unique-Test)."
     ),
@@ -79,7 +79,7 @@ with DAG(
     start_date=datetime(2025, 1, 1),
     catchup=False,
     max_active_runs=1,
-    tags=["adzuna", "data-engineering", "deutschland"],
+    tags=["data-engineering", "deutschland", "multi-source"],
 ) as dag:
     ingest = PythonOperator(
         task_id="ingestion_lauf",

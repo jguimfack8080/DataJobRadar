@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 840" font-family="Inter, system-ui, sans-serif" font-size="13">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 860" font-family="Inter, system-ui, sans-serif" font-size="13">
   <style>
     .knoten { fill: #ffffff; stroke: #000000; stroke-width: 1.5; }
     .pfeil { stroke: #000000; stroke-width: 1.5; fill: none; }
@@ -12,121 +12,163 @@
   <rect width="100%" height="100%" fill="#ffffff" />
 
   <text x="600" y="36" class="text titel" font-size="18">Systemarchitektur Data Job Radar Deutschland</text>
-  <text x="600" y="58" class="text meta">Sieben Schichten, klar voneinander getrennt; fuenf Quellen, eine API</text>
+  <text x="600" y="58" class="text meta">Sieben Schichten, klar voneinander getrennt; neun Quellen, eine API</text>
 
-  <text x="60" y="100" class="text links gruppentitel">QUELLEN</text>
-  <rect x="60" y="110" width="220" height="50" rx="10" class="knoten" />
-  <text x="170" y="135" class="text titel">Bundesagentur f. Arbeit</text>
-  <rect x="60" y="170" width="220" height="50" rx="10" class="knoten" />
-  <text x="170" y="195" class="text titel">Adzuna</text>
-  <rect x="60" y="230" width="220" height="50" rx="10" class="knoten" />
-  <text x="170" y="255" class="text titel">The Muse</text>
-  <rect x="60" y="290" width="220" height="50" rx="10" class="knoten" />
-  <text x="170" y="315" class="text titel">Remotive</text>
-  <rect x="60" y="350" width="220" height="50" rx="10" class="knoten" />
-  <text x="170" y="375" class="text titel">Jobicy</text>
+  <!-- QUELLEN (9 Quellen, Schritt 41 px) -->
+  <text x="60" y="98" class="text links gruppentitel">QUELLEN</text>
+  <rect x="60" y="106" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="128" class="text titel">Bundesagentur f. Arbeit</text>
+  <rect x="60" y="147" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="169" class="text titel">Adzuna</text>
+  <rect x="60" y="188" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="210" class="text titel">Arbeitnow</text>
+  <rect x="60" y="229" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="251" class="text titel">Jooble</text>
+  <rect x="60" y="270" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="292" class="text titel">JSearch (RapidAPI)</text>
+  <rect x="60" y="311" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="333" class="text titel">The Muse</text>
+  <rect x="60" y="352" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="374" class="text titel">Remotive</text>
+  <rect x="60" y="393" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="415" class="text titel">Jobicy</text>
+  <rect x="60" y="434" width="220" height="36" rx="8" class="knoten" />
+  <text x="170" y="456" class="text titel">RemoteOK</text>
 
-  <text x="60" y="430" class="text links gruppentitel">INGESTION</text>
-  <rect x="60" y="440" width="220" height="80" rx="10" class="knoten" />
-  <text x="170" y="465" class="text titel">Multi-Source Pipeline</text>
-  <text x="170" y="485" class="text meta">Base-Client + 5 Adapter</text>
-  <text x="170" y="502" class="text meta">validiert, idempotent</text>
+  <!-- Vertikale Sammelleiste rechts der Quellenboxen -->
+  <line x1="296" y1="124" x2="296" y2="470" stroke="#000000" stroke-width="1.5" />
+  <!-- Stubs: jede Quellenbox -> Sammelleiste -->
+  <line x1="280" y1="124" x2="296" y2="124" stroke="#000000" stroke-width="1.5" />
+  <line x1="280" y1="165" x2="296" y2="165" stroke="#000000" stroke-width="1.5" />
+  <line x1="280" y1="206" x2="296" y2="206" stroke="#000000" stroke-width="1.5" />
+  <line x1="280" y1="247" x2="296" y2="247" stroke="#000000" stroke-width="1.5" />
+  <line x1="280" y1="288" x2="296" y2="288" stroke="#000000" stroke-width="1.5" />
+  <line x1="280" y1="329" x2="296" y2="329" stroke="#000000" stroke-width="1.5" />
+  <line x1="280" y1="370" x2="296" y2="370" stroke="#000000" stroke-width="1.5" />
+  <line x1="280" y1="411" x2="296" y2="411" stroke="#000000" stroke-width="1.5" />
+  <line x1="280" y1="452" x2="296" y2="452" stroke="#000000" stroke-width="1.5" />
 
-  <text x="60" y="550" class="text links gruppentitel">DATA LAKE</text>
-  <rect x="60" y="560" width="100" height="70" rx="10" class="knoten" />
-  <text x="110" y="585" class="text titel">Bronze</text>
-  <text x="110" y="605" class="text meta">partitioniert</text>
-  <text x="110" y="620" class="text meta">nach Quelle</text>
-  <rect x="180" y="560" width="100" height="70" rx="10" class="knoten" />
-  <text x="230" y="585" class="text titel">Silver</text>
-  <text x="230" y="605" class="text meta">Cross-Source</text>
-  <text x="230" y="620" class="text meta">Dedup</text>
-  <rect x="60" y="650" width="220" height="60" rx="10" class="knoten" />
-  <text x="170" y="675" class="text titel">Gold (dbt)</text>
-  <text x="170" y="694" class="text meta">Sternschema, unique-Test</text>
+  <!-- INGESTION -->
+  <text x="60" y="484" class="text links gruppentitel">INGESTION</text>
+  <rect x="60" y="492" width="220" height="72" rx="10" class="knoten" />
+  <text x="170" y="516" class="text titel">Multi-Source Pipeline</text>
+  <text x="170" y="536" class="text meta">Base-Client + 9 Adapter</text>
+  <text x="170" y="552" class="text meta">validiert, idempotent</text>
 
-  <text x="60" y="740" class="text links gruppentitel">WAREHOUSE</text>
-  <rect x="60" y="750" width="220" height="60" rx="10" class="knoten" />
-  <text x="170" y="775" class="text titel">DuckDB</text>
-  <text x="170" y="794" class="text meta">prozessintern</text>
+  <!-- DATA LAKE -->
+  <text x="60" y="582" class="text links gruppentitel">DATA LAKE</text>
+  <rect x="60" y="590" width="100" height="70" rx="10" class="knoten" />
+  <text x="110" y="614" class="text titel">Bronze</text>
+  <text x="110" y="634" class="text meta">partitioniert</text>
+  <text x="110" y="649" class="text meta">nach Quelle</text>
+  <rect x="180" y="590" width="100" height="70" rx="10" class="knoten" />
+  <text x="230" y="614" class="text titel">Silver</text>
+  <text x="230" y="634" class="text meta">Cross-Source</text>
+  <text x="230" y="649" class="text meta">Dedup</text>
+  <rect x="60" y="676" width="220" height="60" rx="10" class="knoten" />
+  <text x="170" y="700" class="text titel">Gold (dbt)</text>
+  <text x="170" y="718" class="text meta">Sternschema, unique-Test</text>
 
-  <text x="400" y="100" class="text links gruppentitel">SERVICE</text>
-  <rect x="400" y="110" width="240" height="80" rx="10" class="knoten" />
-  <text x="520" y="135" class="text titel">FastAPI</text>
-  <text x="520" y="155" class="text meta">Pydantic, Cache, Rate Limit</text>
-  <text x="520" y="172" class="text meta">Filter inkl. quelle (Mehrfach)</text>
+  <!-- WAREHOUSE -->
+  <text x="60" y="754" class="text links gruppentitel">WAREHOUSE</text>
+  <rect x="60" y="762" width="220" height="60" rx="10" class="knoten" />
+  <text x="170" y="786" class="text titel">DuckDB</text>
+  <text x="170" y="804" class="text meta">prozessintern</text>
 
-  <rect x="400" y="220" width="240" height="80" rx="10" class="knoten" />
-  <text x="520" y="245" class="text titel">Next.js Dashboard</text>
-  <text x="520" y="265" class="text meta">statisch exportiert</text>
-  <text x="520" y="282" class="text meta">Quellen-Badge, Quellen-Filter</text>
+  <!-- SERVICE -->
+  <text x="400" y="98" class="text links gruppentitel">SERVICE</text>
+  <rect x="400" y="106" width="240" height="80" rx="10" class="knoten" />
+  <text x="520" y="131" class="text titel">FastAPI</text>
+  <text x="520" y="151" class="text meta">Pydantic, Cache, Rate Limit</text>
+  <text x="520" y="168" class="text meta">Filter inkl. quelle (Mehrfach)</text>
 
-  <rect x="400" y="330" width="240" height="80" rx="10" class="knoten" />
-  <text x="520" y="355" class="text titel">Endnutzer (HTTPS)</text>
-  <text x="520" y="375" class="text meta">pgadmin.thetransporterlabs.de</text>
-  <text x="520" y="392" class="text meta">via Host-Nginx</text>
+  <rect x="400" y="216" width="240" height="80" rx="10" class="knoten" />
+  <text x="520" y="241" class="text titel">Next.js Dashboard</text>
+  <text x="520" y="261" class="text meta">statisch exportiert</text>
+  <text x="520" y="278" class="text meta">Quellen-Badge, Quellen-Filter</text>
 
-  <text x="400" y="450" class="text links gruppentitel">QUALITAET</text>
-  <rect x="400" y="460" width="240" height="80" rx="10" class="knoten" />
-  <text x="520" y="485" class="text titel">dbt-Tests + Quarantaene</text>
-  <text x="520" y="505" class="text meta">unique fact_jobs.job_id</text>
-  <text x="520" y="522" class="text meta">not_null, relationships</text>
+  <rect x="400" y="326" width="240" height="80" rx="10" class="knoten" />
+  <text x="520" y="351" class="text titel">Endnutzer (HTTPS)</text>
+  <text x="520" y="371" class="text meta">pgadmin.thetransporterlabs.de</text>
+  <text x="520" y="388" class="text meta">via Host-Nginx</text>
 
-  <text x="400" y="560" class="text links gruppentitel">BEOBACHTBARKEIT</text>
-  <rect x="400" y="570" width="240" height="80" rx="10" class="knoten" />
-  <text x="520" y="595" class="text titel">structlog</text>
-  <text x="520" y="615" class="text meta">Korrelationskennung</text>
-  <text x="520" y="632" class="text meta">je Lauf und je Quelle</text>
+  <!-- QUALITAET -->
+  <text x="400" y="446" class="text links gruppentitel">QUALITAET</text>
+  <rect x="400" y="456" width="240" height="80" rx="10" class="knoten" />
+  <text x="520" y="481" class="text titel">dbt-Tests + Quarantaene</text>
+  <text x="520" y="501" class="text meta">unique fact_jobs.job_id</text>
+  <text x="520" y="518" class="text meta">not_null, relationships</text>
 
-  <text x="400" y="670" class="text links gruppentitel">SICHERHEIT</text>
-  <rect x="400" y="680" width="240" height="80" rx="10" class="knoten" />
-  <text x="520" y="705" class="text titel">.env + Rate Limit + CORS</text>
-  <text x="520" y="725" class="text meta">Loopback nur extern</text>
-  <text x="520" y="742" class="text meta">Geheimnisse nicht im Code</text>
+  <!-- BEOBACHTBARKEIT -->
+  <text x="400" y="556" class="text links gruppentitel">BEOBACHTBARKEIT</text>
+  <rect x="400" y="566" width="240" height="80" rx="10" class="knoten" />
+  <text x="520" y="591" class="text titel">structlog</text>
+  <text x="520" y="611" class="text meta">Korrelationskennung</text>
+  <text x="520" y="628" class="text meta">je Lauf und je Quelle</text>
 
-  <text x="780" y="100" class="text links gruppentitel">BETRIEB</text>
-  <rect x="780" y="110" width="380" height="80" rx="10" class="knoten" />
-  <text x="970" y="135" class="text titel">Apache Airflow (LocalExecutor)</text>
-  <text x="970" y="155" class="text meta">arbeitsmarkt_data_pipeline</text>
-  <text x="970" y="172" class="text meta">4x taeglich, max_active_runs=1</text>
+  <!-- SICHERHEIT -->
+  <text x="400" y="666" class="text links gruppentitel">SICHERHEIT</text>
+  <rect x="400" y="676" width="240" height="80" rx="10" class="knoten" />
+  <text x="520" y="701" class="text titel">.env + Rate Limit + CORS</text>
+  <text x="520" y="721" class="text meta">Loopback nur extern</text>
+  <text x="520" y="738" class="text meta">Geheimnisse nicht im Code</text>
 
-  <rect x="780" y="220" width="180" height="60" rx="10" class="knoten" />
-  <text x="870" y="245" class="text titel">Postgres</text>
-  <text x="870" y="264" class="text meta">nur Airflow Metadaten</text>
-  <rect x="980" y="220" width="180" height="60" rx="10" class="knoten" />
-  <text x="1070" y="245" class="text titel">Docker Compose</text>
-  <text x="1070" y="264" class="text meta">Healthchecks, Volumes</text>
+  <!-- BETRIEB -->
+  <text x="780" y="98" class="text links gruppentitel">BETRIEB</text>
+  <rect x="780" y="106" width="380" height="80" rx="10" class="knoten" />
+  <text x="970" y="131" class="text titel">Apache Airflow (LocalExecutor)</text>
+  <text x="970" y="151" class="text meta">arbeitsmarkt_data_pipeline</text>
+  <text x="970" y="168" class="text meta">4x taeglich, max_active_runs=1</text>
 
-  <rect x="780" y="310" width="180" height="60" rx="10" class="knoten" />
-  <text x="870" y="335" class="text titel">SMTP-Alerts</text>
-  <text x="870" y="354" class="text meta">Mail bei Pipeline-Fehlern</text>
-  <rect x="980" y="310" width="180" height="60" rx="10" class="knoten" />
-  <text x="1070" y="335" class="text titel">Host-Nginx</text>
-  <text x="1070" y="354" class="text meta">HTTPS Terminator</text>
+  <rect x="780" y="216" width="180" height="60" rx="10" class="knoten" />
+  <text x="870" y="241" class="text titel">Postgres</text>
+  <text x="870" y="260" class="text meta">nur Airflow Metadaten</text>
+  <rect x="980" y="216" width="180" height="60" rx="10" class="knoten" />
+  <text x="1070" y="241" class="text titel">Docker Compose</text>
+  <text x="1070" y="260" class="text meta">Healthchecks, Volumes</text>
 
-  <text x="780" y="430" class="text links gruppentitel">DUPLIKAT-GARANTIE</text>
-  <rect x="780" y="440" width="380" height="180" rx="10" class="knoten" />
-  <text x="800" y="465" class="text links titel">Vier unabhaengige Schutzebenen</text>
-  <text x="800" y="490" class="text links meta">1. Bronze: Korrelationskennung je Schreibvorgang</text>
-  <text x="800" y="510" class="text links meta">2. Silver intra-Quelle: ROW_NUMBER OVER (quelle, quell_id)</text>
-  <text x="800" y="530" class="text links meta">3. Silver cross-Quelle: ROW_NUMBER OVER (dedup_signatur)</text>
-  <text x="800" y="546" class="text links meta">   sortiert nach Quellen-Prioritaet</text>
-  <text x="800" y="570" class="text links meta">4. dbt: not_null + unique-Test auf fact_jobs.job_id</text>
-  <text x="800" y="594" class="text links meta">Prioritaet: BA &gt; Adzuna &gt; Muse &gt; Remotive &gt; Jobicy</text>
+  <rect x="780" y="306" width="180" height="60" rx="10" class="knoten" />
+  <text x="870" y="331" class="text titel">SMTP-Alerts</text>
+  <text x="870" y="350" class="text meta">Mail bei Pipeline-Fehlern</text>
+  <rect x="980" y="306" width="180" height="60" rx="10" class="knoten" />
+  <text x="1070" y="331" class="text titel">Host-Nginx</text>
+  <text x="1070" y="350" class="text meta">HTTPS Terminator</text>
 
-  <path class="pfeil" d="M280 135 L60 460" marker-end="url(#pa)" />
-  <path class="pfeil" d="M280 195 L60 470" marker-end="url(#pa)" />
-  <path class="pfeil" d="M280 255 L60 480" marker-end="url(#pa)" />
-  <path class="pfeil" d="M280 315 L60 490" marker-end="url(#pa)" />
-  <path class="pfeil" d="M280 375 L60 500" marker-end="url(#pa)" />
+  <!-- DUPLIKAT-GARANTIE -->
+  <text x="780" y="396" class="text links gruppentitel">DUPLIKAT-GARANTIE</text>
+  <rect x="780" y="404" width="380" height="210" rx="10" class="knoten" />
+  <text x="800" y="428" class="text links titel">Vier unabhaengige Schutzebenen</text>
+  <text x="800" y="452" class="text links meta">1. Bronze: Korrelationskennung je Schreibvorgang</text>
+  <text x="800" y="472" class="text links meta">2. Silver intra-Quelle: ROW_NUMBER OVER (quelle, quell_id)</text>
+  <text x="800" y="492" class="text links meta">3. Silver cross-Quelle: ROW_NUMBER OVER (dedup_signatur)</text>
+  <text x="800" y="508" class="text links meta">   sortiert nach Quellen-Prioritaet</text>
+  <text x="800" y="532" class="text links meta">4. dbt: not_null + unique-Test auf fact_jobs.job_id</text>
+  <text x="800" y="556" class="text links meta">Prioritaet: BA &gt; Adzuna &gt; Arbeitnow &gt; Jooble &gt; Muse</text>
+  <text x="800" y="574" class="text links meta">           &gt; JSearch &gt; Remotive &gt; Jobicy &gt; RemoteOK</text>
 
-  <path class="pfeil" d="M110 630 L110 650" marker-end="url(#pa)" />
-  <path class="pfeil" d="M230 630 L170 650" marker-end="url(#pa)" />
-  <path class="pfeil" d="M170 710 L170 750" marker-end="url(#pa)" />
+  <!-- PFEILE -->
+  <!-- Sammelleiste -> Pipeline (L-foermig: runter dann links) -->
+  <path class="pfeil" d="M296,470 L296,528 L280,528" marker-end="url(#pa)" />
 
-  <path class="pfeil" d="M280 780 L520 200" marker-end="url(#pa)" />
-  <path class="pfeil" d="M520 190 L520 220" marker-end="url(#pa)" />
-  <path class="pfeil" d="M520 300 L520 330" marker-end="url(#pa)" />
+  <!-- Pipeline -> Bronze und Silver -->
+  <path class="pfeil" d="M110,564 L110,590" marker-end="url(#pa)" />
+  <path class="pfeil" d="M230,564 L230,590" marker-end="url(#pa)" />
+
+  <!-- Bronze + Silver -> Gold -->
+  <path class="pfeil" d="M110,660 L110,676" marker-end="url(#pa)" />
+  <path class="pfeil" d="M230,660 L230,676" marker-end="url(#pa)" />
+
+  <!-- Gold -> DuckDB -->
+  <path class="pfeil" d="M170,736 L170,762" marker-end="url(#pa)" />
+
+  <!-- DuckDB -> FastAPI (L-foermig: rechts dann hoch dann rechts) -->
+  <path class="pfeil" d="M280,792 L360,792 L360,146 L400,146" marker-end="url(#pa)" />
+
+  <!-- FastAPI -> Next.js -->
+  <path class="pfeil" d="M520,186 L520,216" marker-end="url(#pa)" />
+
+  <!-- Next.js -> Endnutzer -->
+  <path class="pfeil" d="M520,296 L520,326" marker-end="url(#pa)" />
 
   <defs>
     <marker id="pa" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">

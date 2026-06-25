@@ -91,7 +91,16 @@ class JobicyClient(BasisQuelleClient):
         except ValueError:
             return None
 
+    @staticmethod
+    def _erstes_element(wert: Any) -> Any:
+        """Gibt das erste Element zurueck wenn wert eine Liste ist, sonst wert selbst."""
+        if isinstance(wert, list):
+            return wert[0] if wert else None
+        return wert
+
     def _mappen(self, roh: dict[str, Any], kategorie: str) -> RohStellenanzeige:
+        industrie = self._erstes_element(roh.get("jobIndustry"))
+        jobtyp = self._erstes_element(roh.get("jobType"))
         return RohStellenanzeige(
             quelle=self.quelle,
             quell_id=str(roh["id"]),
@@ -107,10 +116,10 @@ class JobicyClient(BasisQuelleClient):
             gehalt_max=float(roh["salaryMax"]) if roh.get("salaryMax") else None,
             gehalt_ist_vorhanden=bool(roh.get("salaryMin") or roh.get("salaryMax")),
             waehrung=roh.get("salaryCurrency") or "EUR",
-            vertragstyp=roh.get("jobType"),
+            vertragstyp=str(jobtyp) if jobtyp else None,
             vertragszeit=None,
-            kategorie_kennung=roh.get("jobIndustry"),
-            kategorie_bezeichnung=roh.get("jobIndustry"),
+            kategorie_kennung=str(industrie) if industrie else None,
+            kategorie_bezeichnung=str(industrie) if industrie else None,
             veroeffentlicht_am=self._datum_parsen(roh.get("pubDate")),
             angebots_url=roh.get("url"),
             quell_kategorie=kategorie,

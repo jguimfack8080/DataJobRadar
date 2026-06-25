@@ -25,11 +25,11 @@ models:
         description: "Deterministischer Primaerschluessel: sha256(quelle:quell_id), 24 Zeichen."
         tests: [not_null, unique]
       - name: quelle
-        description: "Datenquelle: bundesagentur, adzuna, muse, remotive oder jobicy."
+        description: "Datenquelle: bundesagentur, adzuna, arbeitnow, jooble, jsearch, muse, remotive, jobicy oder remoteok."
         tests:
           - not_null
           - accepted_values:
-              values: ['bundesagentur', 'adzuna', 'muse', 'remotive', 'jobicy']
+              values: ['bundesagentur', 'adzuna', 'arbeitnow', 'jooble', 'jsearch', 'muse', 'remotive', 'jobicy', 'remoteok']
       - name: unternehmens_id
         tests:
           - relationships:

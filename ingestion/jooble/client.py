@@ -96,7 +96,7 @@ class JoobleClient(BasisQuelleClient):
                 url,
                 json={
                     "keywords": keywords,
-                    "location": "Deutschland",
+                    "location": "Germany",
                     "page": seite,
                     "resultonpage": 20,
                 },

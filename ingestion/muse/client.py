@@ -30,6 +30,8 @@ class MuseClient(BasisQuelleClient):
     STANDARD_ANFRAGEN = (
         Suchanfrage("software_engineer", "Software Engineering", "Software Engineering Stellen"),
         Suchanfrage("science_engineering", "Science and Engineering", "Science and Engineering Stellen"),
+        Suchanfrage("data_analytics", "Data and Analytics", "Data und Analytics Stellen"),
+        Suchanfrage("it", "IT", "IT Stellen"),
     )
 
     def __init__(self, http_client: Optional[httpx.Client] = None) -> None:
@@ -51,7 +53,7 @@ class MuseClient(BasisQuelleClient):
             anzeigen = [
                 self._mappen(r, anfrage.kategorie)
                 for r in results
-                if isinstance(r, dict) and r.get("id") and self._ist_relevant_fuer_deutschland(r)
+                if isinstance(r, dict) and r.get("id")
             ]
             seitencount = int(antwort.get("page_count") or 1)
             yield QuelleSeite(
@@ -80,20 +82,6 @@ class MuseClient(BasisQuelleClient):
             )
 
         return aufrufen()
-
-    @staticmethod
-    def _ist_relevant_fuer_deutschland(roh: dict[str, Any]) -> bool:
-        """Akzeptiert Germany, Remote, Worldwide, EU-/Europe-Stellen."""
-        locations = roh.get("locations") or []
-        if not locations:
-            return False
-        for loc in locations:
-            name = (loc.get("name") or "").lower()
-            if any(stichwort in name for stichwort in (
-                "germany", "deutschland", "remote", "worldwide", "anywhere", "europe", "eu", "emea"
-            )):
-                return True
-        return False
 
     @staticmethod
     def _datum_parsen(wert: Any) -> Optional[datetime]:

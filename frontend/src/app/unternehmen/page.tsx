@@ -18,6 +18,7 @@ export default function UnternehmenSeite() {
   const [ladend, setLadend] = useState<'init' | 'mehr' | null>('init');
   const [fehler, setFehler] = useState<string | null>(null);
   const [endeErreicht, setEndeErreicht] = useState(false);
+  const [suchbegriff, setSuchbegriff] = useState('');
 
   const seiteHolen = useCallback(async (startOffset: number) => {
     try {
@@ -47,6 +48,10 @@ export default function UnternehmenSeite() {
     void seiteHolen(naechsterOffset);
   };
 
+  const sichtbar = suchbegriff
+    ? eintraege.filter((e) => e.unternehmen.toLowerCase().includes(suchbegriff.toLowerCase()))
+    : eintraege;
+
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <header>
@@ -62,7 +67,7 @@ export default function UnternehmenSeite() {
             Rangliste
             {eintraege.length > 0 ? (
               <span className="ml-2 text-xs text-muted-foreground">
-                {eintraege.length} {endeErreicht ? 'angezeigt' : '(weitere verfuegbar)'}
+                {suchbegriff ? `${sichtbar.length} von ${eintraege.length}` : `${eintraege.length} ${endeErreicht ? 'angezeigt' : '(weitere verfuegbar)'}`}
               </span>
             ) : null}
           </CardTitle>
@@ -75,6 +80,15 @@ export default function UnternehmenSeite() {
           )}
           {eintraege.length > 0 && (
             <>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={suchbegriff}
+                  onChange={(e) => setSuchbegriff(e.target.value)}
+                  placeholder="Unternehmen suchen..."
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:max-w-xs"
+                />
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full table-auto text-sm">
                   <thead>
@@ -85,7 +99,7 @@ export default function UnternehmenSeite() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {eintraege.map((eintrag) => (
+                    {sichtbar.map((eintrag) => (
                       <tr key={eintrag.unternehmen} className="hover:bg-muted/40">
                         <td className="px-3 py-2">
                           <Link

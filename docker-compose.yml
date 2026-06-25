@@ -153,6 +153,7 @@ services:
       QUELLEN_STATUS_PFAD: /data/warehouse/quellen_status.json
       LOG_FORMAT: ${LOG_FORMAT:-json}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
     volumes:
       - djr-lake:/data/lake:ro
       - djr-warehouse:/data/warehouse:ro

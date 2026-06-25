@@ -6,6 +6,9 @@ import os
 import time
 from collections import defaultdict, deque
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+_BERLIN = ZoneInfo("Europe/Berlin")
 from pathlib import Path
 from threading import Lock
 from typing import Deque, Dict, Optional
@@ -91,7 +94,7 @@ class BesucherMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         ip = _ip_ermitteln(request)
-        zeitpunkt = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        zeitpunkt = datetime.now(_BERLIN).strftime("%Y-%m-%d %H:%M:%S %Z")
         methode = request.method
         ua = request.headers.get("user-agent", "-")
         referer = request.headers.get("referer", "")

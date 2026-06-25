@@ -110,6 +110,7 @@ Stand des aktuellen Deployments:
 
 - Erreichbar unter `https://pgadmin.thetransporterlabs.de/` (HTTP wird per 301 auf HTTPS umgeleitet, das Host-Nginx terminiert das TLS).
 - Lokal: `http://127.0.0.1:8081/` (Backend mit eingebettetem Dashboard).
+- Admin-Dashboard: `https://pgadmin.thetransporterlabs.de/admin/` (Token-Authentifizierung, Wert in `.env` unter `ADMIN_TOKEN`). Lokal: `http://127.0.0.1:8081/admin/`.
 - Pipeline `arbeitsmarkt_data_pipeline` einmal komplett durchgelaufen mit allen sechs Tasks `success`: `ingestion_lauf -> silver_transformation -> gold_initialisieren -> dbt_deps -> dbt_run -> dbt_test`.
 - Backend antwortet mit echten Daten aus der Adzuna API:
     - Mehr als 3000 aktive Stellenanzeigen aus Deutschland im Bestand

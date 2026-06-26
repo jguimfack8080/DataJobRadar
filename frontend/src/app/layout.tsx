@@ -9,13 +9,14 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
+const TITEL = 'Data Job Radar Deutschland – IT-Arbeitsmarkt Analyse';
 const BESCHREIBUNG =
-  'Echtzeit-Analyse des deutschen IT-Arbeitsmarkts: 9 Quellen, taeglich aktualisiert. Skills, Staedte, Unternehmen und Gehaltsstatistiken auf einen Blick.';
+  'Echtzeit-Analyse des IT-Arbeitsmarkts: 9 Quellen, taeglich aktualisiert. Skills, Staedte, Gehalt auf einen Blick.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Data Job Radar Deutschland',
+    default: TITEL,
     template: '%s | Data Job Radar Deutschland',
   },
   description: BESCHREIBUNG,
@@ -23,15 +24,14 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: 'Data Job Radar Deutschland',
     url: SITE_URL,
-    title: 'Data Job Radar Deutschland',
+    title: TITEL,
     description: BESCHREIBUNG,
-    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: 'Data Job Radar Deutschland' }],
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: TITEL }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Data Job Radar Deutschland',
-    description:
-      'Echtzeit-Analyse des deutschen IT-Arbeitsmarkts: 9 Quellen, taeglich aktualisiert.',
+    title: TITEL,
+    description: BESCHREIBUNG,
     images: [OG_IMAGE],
   },
   robots: { index: true, follow: true },

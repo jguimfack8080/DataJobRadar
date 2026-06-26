@@ -146,6 +146,12 @@ export function Sidebar() {
             ))}
           </ul>
         </div>
+
+        <div className="border-t px-5 py-3">
+          <p className="text-[10px] text-muted-foreground/60">
+            Projekt von <span className="font-medium text-muted-foreground">Jordan Jeuna</span>
+          </p>
+        </div>
       </aside>
     </>
   );

@@ -1,5 +1,7 @@
 # Data Job Radar Deutschland
 
+**Autor:** Jordan Jeuna
+
 Analyseplattform fuer den deutschen IT-Arbeitsmarkt. Fuenf Quellen werden mehrmals
 taeglich zusammengefuehrt: Bundesagentur fuer Arbeit, Adzuna, The Muse, Remotive
 und Jobicy. Die Stellenangebote durchlaufen ein Bronze-Silver-Gold Data Lake,

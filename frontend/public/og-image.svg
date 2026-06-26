@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#818cf8;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Hintergrund -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Dezente Gitterpunkte -->
+  <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+    <circle cx="1" cy="1" r="1" fill="#334155" opacity="0.5"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <!-- Farbiger Akzentbalken oben -->
+  <rect x="0" y="0" width="1200" height="6" fill="url(#bar)"/>
+
+  <!-- Linke Dekoration: vertikaler Balken -->
+  <rect x="80" y="120" width="4" height="300" fill="url(#accent)" rx="2"/>
+
+  <!-- Ikon-Kreis -->
+  <circle cx="130" cy="200" r="36" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <text x="130" y="210" font-family="system-ui, sans-serif" font-size="28" text-anchor="middle" fill="#60a5fa">📡</text>
+
+  <!-- Haupttitel -->
+  <text x="190" y="185" font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="700" fill="#f8fafc" letter-spacing="-1">Data Job Radar</text>
+
+  <!-- Untertitel -->
+  <text x="190" y="245" font-family="system-ui, -apple-system, sans-serif" font-size="40" font-weight="400" fill="#6366f1" letter-spacing="2">DEUTSCHLAND</text>
+
+  <!-- Trennlinie -->
+  <line x1="190" y1="275" x2="820" y2="275" stroke="#334155" stroke-width="1"/>
+
+  <!-- Beschreibung -->
+  <text x="190" y="320" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#94a3b8">Echtzeit-Analyse des IT-Arbeitsmarkts</text>
+  <text x="190" y="358" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#94a3b8">9 Quellen · Taeglich aktualisiert · Bronze/Silver/Gold</text>
+
+  <!-- Stats-Kacheln -->
+  <rect x="190" y="400" width="160" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="270" y="430" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#3b82f6" text-anchor="middle">9</text>
+  <text x="270" y="458" font-family="system-ui, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">Quellen</text>
+
+  <rect x="370" y="400" width="160" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="450" y="430" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#6366f1" text-anchor="middle">4x</text>
+  <text x="450" y="458" font-family="system-ui, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">Pro Tag</text>
+
+  <rect x="550" y="400" width="160" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="630" y="430" font-family="system-ui, sans-serif" font-size="28" font-weight="700" fill="#10b981" text-anchor="middle">Live</text>
+  <text x="630" y="458" font-family="system-ui, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">Dashboard</text>
+
+  <!-- Rechte Seite: Balkendiagramm-Deko -->
+  <rect x="900" y="160" width="32" height="180" rx="4" fill="#3b82f6" opacity="0.7"/>
+  <rect x="948" y="220" width="32" height="120" rx="4" fill="#6366f1" opacity="0.7"/>
+  <rect x="996" y="190" width="32" height="150" rx="4" fill="#8b5cf6" opacity="0.6"/>
+  <rect x="1044" y="240" width="32" height="100" rx="4" fill="#3b82f6" opacity="0.5"/>
+  <rect x="1092" y="200" width="32" height="140" rx="4" fill="#6366f1" opacity="0.6"/>
+  <line x1="890" y1="340" x2="1140" y2="340" stroke="#334155" stroke-width="1"/>
+
+  <!-- Footer -->
+  <rect x="0" y="580" width="1200" height="50" fill="#0a0f1e" opacity="0.6"/>
+  <text x="80" y="612" font-family="system-ui, sans-serif" font-size="18" fill="#475569">Jordan Jeuna</text>
+  <text x="1120" y="612" font-family="system-ui, sans-serif" font-size="18" fill="#3b82f6" text-anchor="end">pgadmin.thetransporterlabs.de</text>
+</svg>

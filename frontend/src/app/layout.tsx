@@ -4,14 +4,37 @@ import { ThemeProvider } from '@/components/layout/theme-provider';
 import { NavigationProvider } from '@/components/layout/navigation-context';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Topbar } from '@/components/layout/topbar';
+import { SITE_URL, OG_IMAGE } from '@/lib/site-metadata';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
+const BESCHREIBUNG =
+  'Echtzeit-Analyse des deutschen IT-Arbeitsmarkts: 9 Quellen, taeglich aktualisiert. Skills, Staedte, Unternehmen und Gehaltsstatistiken auf einen Blick.';
+
 export const metadata: Metadata = {
-  title: 'Data Job Radar Deutschland',
-  description:
-    'Analyseplattform fuer den deutschen IT-Arbeitsmarkt aus fuenf Quellen: Bundesagentur fuer Arbeit, Adzuna, The Muse, Remotive und Jobicy.',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'Data Job Radar Deutschland',
+    template: '%s | Data Job Radar Deutschland',
+  },
+  description: BESCHREIBUNG,
+  openGraph: {
+    type: 'website',
+    siteName: 'Data Job Radar Deutschland',
+    url: SITE_URL,
+    title: 'Data Job Radar Deutschland',
+    description: BESCHREIBUNG,
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: 'Data Job Radar Deutschland' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Data Job Radar Deutschland',
+    description:
+      'Echtzeit-Analyse des deutschen IT-Arbeitsmarkts: 9 Quellen, taeglich aktualisiert.',
+    images: [OG_IMAGE],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

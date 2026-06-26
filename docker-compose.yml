@@ -139,8 +139,6 @@ services:
       dockerfile: infra/docker/backend.Dockerfile
       args:
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
-        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME}
     restart: unless-stopped
     depends_on:
       airflow-init:

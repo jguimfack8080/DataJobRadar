@@ -70,5 +70,4 @@
   <!-- Footer -->
   <rect x="0" y="580" width="1200" height="50" fill="#0a0f1e" opacity="0.6"/>
   <text x="80" y="612" font-family="system-ui, sans-serif" font-size="18" fill="#475569">Jordan Jeuna</text>
-  <text x="1120" y="612" font-family="system-ui, sans-serif" font-size="18" fill="#3b82f6" text-anchor="end">pgadmin.thetransporterlabs.de</text>
 </svg>

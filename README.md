@@ -202,6 +202,31 @@ unter `/diagramme/<name>.svg` und in der `/wiki/`-Seite erreichbar sind.
 | [Datenmodell](docs/datenmodell.svg)         | Sternschema mit fact_jobs, fact_skills und Dimensionen       |
 | [Deployment-Topologie](docs/deployment.svg) | Host-Nginx, Docker-Stack, Volumes und Sicherheitsgrenzen     |
 
+## Social-Media-Vorschaubild (OG-Image)
+
+Das Vorschaubild fuer LinkedIn, WhatsApp, Facebook und X (Twitter) liegt in zwei Formaten vor:
+
+| Datei | Rolle |
+|---|---|
+| [`frontend/public/og-image.svg`](frontend/public/og-image.svg) | Quelldatei zum Bearbeiten (Vektorgrafik, 1200x630) |
+| [`frontend/public/og-image.png`](frontend/public/og-image.png) | Produktionsdatei, die von den Crawlern geladen wird |
+
+Um das Bild anzupassen: SVG mit einem Editor (Inkscape, VS Code, Browser) oeffnen und aendern,
+dann das PNG neu erzeugen und das Backend neu bauen:
+
+```bash
+python3 -c "
+import cairosvg
+cairosvg.svg2png(
+    url='frontend/public/og-image.svg',
+    write_to='frontend/public/og-image.png',
+    output_width=1200,
+    output_height=630
+)
+"
+docker compose build backend && docker compose up -d backend
+```
+
 ## Live-Dashboard
 
 Alle Seiten laden initial 50 Eintraege und bieten einen "Mehr laden"-Button, sobald weitere
